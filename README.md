@@ -1,4 +1,5 @@
-![Logo](admin/wattcycle.png)
+<img src="admin/wattcycle.png" width="100" />
+
 # ioBroker.wattcycle
 
 Reads WattCycle / XDZN BLE batteries (TDT protocol, characteristics fff1/fff2/fffa, "HiLink" auth) into ioBroker.
