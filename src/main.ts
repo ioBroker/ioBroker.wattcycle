@@ -148,6 +148,22 @@ const STATUS_STATES: StateDef[] = [
     { id: 'lastError', name: 'Last error', type: 'string', role: 'text', read: true, write: false },
 ];
 
+const TOTAL_STATES: StateDef[] = [
+    { id: 'soc', name: 'Average state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
+    { id: 'voltage', name: 'Average voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
+    { id: 'current', name: 'Total current', type: 'number', role: 'value.current', unit: 'A', read: true, write: false },
+    { id: 'power', name: 'Total power', type: 'number', role: 'value.power', unit: 'W', read: true, write: false },
+    { id: 'remaining_ah', name: 'Total remaining capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    { id: 'total_ah', name: 'Total capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    { id: 'design_ah', name: 'Total design capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    { id: 'cycles_avg', name: 'Average cycle count', type: 'number', role: 'value', read: true, write: false },
+    { id: 'cell_spread_mv_max', name: 'Max cell spread', type: 'number', role: 'value', unit: 'mV', read: true, write: false },
+    { id: 'mos_temp_max', name: 'Max MOSFET temperature', type: 'number', role: 'value.temperature', unit: '°C', read: true, write: false },
+    { id: 'pcb_temp_max', name: 'Max PCB temperature', type: 'number', role: 'value.temperature', unit: '°C', read: true, write: false },
+    { id: 'count', name: 'Number of reachable batteries', type: 'number', role: 'value', read: true, write: false },
+    { id: 'lastUpdate', name: 'Last aggregate update', type: 'number', role: 'date', read: true, write: false },
+];
+
 function sanitizeId(s: string): string {
     return (s || '').toString().replace(/[^a-zA-Z0-9_]/g, '_');
 }
@@ -327,16 +343,21 @@ class WattcycleAdapter extends Adapter {
         const batteries = (Array.isArray(this.config.batteries) ? this.config.batteries : []).filter(
             b => b && b.mac && b.enabled !== false,
         );
+        const successful: BatteryAnalog[] = [];
         try {
             for (const bat of batteries) {
                 if (this.stopping) {
                     break;
                 }
-                await this.pollBattery(bat);
+                const analog = await this.pollBattery(bat);
+                if (analog) {
+                    successful.push(analog);
+                }
                 if (gapMs > 0 && !this.stopping) {
                     await new Promise<void>(resolve => setTimeout(resolve, gapMs));
                 }
             }
+            await this.writeTotal(successful);
         } finally {
             this.polling = false;
             const elapsed = Date.now() - start;
@@ -345,9 +366,9 @@ class WattcycleAdapter extends Adapter {
         }
     }
 
-    private async pollBattery(bat: BatteryEntry): Promise<void> {
+    private async pollBattery(bat: BatteryEntry): Promise<BatteryAnalog | null> {
         if (!this.ble) {
-            return;
+            return null;
         }
         const devId = this.getDeviceId(bat);
         const prefix = `${devId}.`;
@@ -365,11 +386,13 @@ class WattcycleAdapter extends Adapter {
             this.log.debug(
                 `Polled ${bat.mac}${data.analog ? ` SOC=${data.analog.soc}% V=${data.analog.voltage}V` : ''}`,
             );
+            return data.analog ?? null;
         } catch (e) {
             const msg = (e as Error).message || String(e);
             this.log.warn(`Poll ${bat.mac}: ${msg}`);
             await this.setStateAsync(`${prefix}reachable`, false, true);
             await this.setStateAsync(`${prefix}lastError`, msg, true);
+            return null;
         }
     }
 
@@ -395,6 +418,31 @@ class WattcycleAdapter extends Adapter {
         await this.setStateAsync(`${prefix}product.serial`, p.serial, true);
     }
 
+    private async writeTotal(reads: BatteryAnalog[]): Promise<void> {
+        const r = (n: number, d: number): number => Number(n.toFixed(d));
+        const n = reads.length;
+        await this.setStateAsync('total.count', n, true);
+        await this.setStateAsync('total.lastUpdate', Date.now(), true);
+        if (!n) {
+            return;
+        }
+        const sum = (sel: (a: BatteryAnalog) => number): number => reads.reduce((s, a) => s + sel(a), 0);
+        const avg = (sel: (a: BatteryAnalog) => number): number => sum(sel) / n;
+        const max = (sel: (a: BatteryAnalog) => number): number => reads.reduce((m, a) => Math.max(m, sel(a)), -Infinity);
+
+        await this.setStateAsync('total.soc', r(avg(a => a.soc), 1), true);
+        await this.setStateAsync('total.voltage', r(avg(a => a.voltage), 2), true);
+        await this.setStateAsync('total.current', r(sum(a => a.current), 1), true);
+        await this.setStateAsync('total.power', r(sum(a => a.power), 1), true);
+        await this.setStateAsync('total.remaining_ah', r(sum(a => a.remaining_ah), 1), true);
+        await this.setStateAsync('total.total_ah', r(sum(a => a.total_ah), 1), true);
+        await this.setStateAsync('total.design_ah', r(sum(a => a.design_ah), 1), true);
+        await this.setStateAsync('total.cycles_avg', r(avg(a => a.cycles), 1), true);
+        await this.setStateAsync('total.cell_spread_mv_max', Math.round(max(a => a.cell_spread_mv)), true);
+        await this.setStateAsync('total.mos_temp_max', r(max(a => a.mos_temp), 1), true);
+        await this.setStateAsync('total.pcb_temp_max', r(max(a => a.pcb_temp), 1), true);
+    }
+
     private getDeviceId(bat: BatteryEntry): string {
         const named = bat.name ? sanitizeId(bat.name) : '';
         return `batteries.${named || `b_${macToId(bat.mac)}`}`;
@@ -406,6 +454,29 @@ class WattcycleAdapter extends Adapter {
             common: { name: 'Batteries' },
             native: {},
         });
+
+        await this.setObjectNotExistsAsync('total', {
+            type: 'device',
+            common: { name: 'Aggregated total (sums and averages over all batteries)' },
+            native: {},
+        });
+        for (const s of TOTAL_STATES) {
+            const common: ioBroker.StateCommon = {
+                name: s.name,
+                type: s.type,
+                role: s.role,
+                read: true,
+                write: false,
+            };
+            if (s.type === 'number' && s.unit) {
+                common.unit = s.unit;
+            }
+            await this.setObjectNotExistsAsync(`total.${s.id}`, {
+                type: 'state',
+                common,
+                native: {},
+            });
+        }
 
         const wantedDeviceIds = new Set<string>();
 

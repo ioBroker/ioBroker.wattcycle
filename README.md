@@ -46,6 +46,24 @@ For every configured battery the following states are created under `wattcycle.<
 | `reachable`            | boolean |      | True if last read succeeded              |
 | `lastError`            | string  |      | Error from last failed read              |
 
+In addition, an aggregate device `wattcycle.<instance>.total` is created (assumes parallel topology):
+
+| State                       | Type   | Unit | Aggregation     |
+|-----------------------------|--------|------|-----------------|
+| `soc`                       | number | %    | average         |
+| `voltage`                   | number | V    | average         |
+| `current`                   | number | A    | sum             |
+| `power`                     | number | W    | sum             |
+| `remaining_ah`              | number | Ah   | sum             |
+| `total_ah`                  | number | Ah   | sum             |
+| `design_ah`                 | number | Ah   | sum             |
+| `cycles_avg`                | number |      | average         |
+| `cell_spread_mv_max`        | number | mV   | maximum         |
+| `mos_temp_max`              | number | °C   | maximum         |
+| `pcb_temp_max`              | number | °C   | maximum         |
+| `count`                     | number |      | reachable count |
+| `lastUpdate`                | number |      | aggregate ts    |
+
 ## Messages
 
 ```js
