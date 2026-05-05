@@ -115,7 +115,6 @@
                             "attr": "name",
                             "type": "text",
                             "default": "",
-                            "width": 200,
                             "filter": true
                         },
                         {
@@ -123,7 +122,6 @@
                             "attr": "mac",
                             "type": "text",
                             "default": "",
-                            "width": 220,
                             "filter": true
                         }
                     ]
