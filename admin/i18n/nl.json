@@ -1,0 +1,21 @@
+{
+    "Main settings": "Hoofdinstellingen",
+    "Batteries": "Accu's",
+    "Bluetooth adapter": "Bluetooth-adapter",
+    "Pick the HCI adapter. Restart adapter after change.": "Kies de HCI-adapter. Adapter na wijziging herstarten.",
+    "Polling interval (ms)": "Polling-interval (ms)",
+    "Interval between full poll cycles, in milliseconds.": "Tijd tussen volledige pollcycli, in milliseconden.",
+    "Gap between batteries (ms)": "Pauze tussen accu's (ms)",
+    "Pause between consecutive battery reads in one cycle.": "Pauze tussen opeenvolgende accu-uitlezingen in één cyclus.",
+    "Scan duration (ms)": "Scanduur (ms)",
+    "How long the BLE scan should run.": "Hoe lang de BLE-scan moet duren.",
+    "Scan for BLE devices": "BLE-apparaten zoeken",
+    "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "Voert een BLE-scan uit via de ingestelde HCI-adapter en toont apparaten in de buurt. Kopieer een MAC naar de onderstaande tabel.",
+    "Discovered devices": "Gevonden apparaten",
+    "Configured batteries": "Geconfigureerde accu's",
+    "Enabled": "Actief",
+    "Name": "Naam",
+    "MAC address": "MAC-adres",
+    "MAC": "MAC",
+    "RSSI": "RSSI"
+}

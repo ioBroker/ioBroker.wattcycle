@@ -1,0 +1,136 @@
+{
+    "i18n": true,
+    "type": "tabs",
+    "items": {
+        "_main": {
+            "type": "panel",
+            "label": "Main settings",
+            "items": {
+                "hciDevice": {
+                    "type": "selectSendTo",
+                    "command": "listHciAdapters",
+                    "manual": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 4,
+                    "xl": 4,
+                    "default": 0,
+                    "label": "Bluetooth adapter"
+                },
+                "pollInterval": {
+                    "newLine": true,
+                    "type": "number",
+                    "min": 5000,
+                    "max": 86400000,
+                    "step": 1000,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 3,
+                    "xl": 3,
+                    "default": 60000,
+                    "label": "Polling interval (ms)",
+                    "help": "Interval between full poll cycles, in milliseconds."
+                },
+                "perBatteryGapMs": {
+                    "type": "number",
+                    "min": 0,
+                    "max": 60000,
+                    "step": 100,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 3,
+                    "xl": 3,
+                    "default": 1000,
+                    "label": "Gap between batteries (ms)",
+                    "help": "Pause between consecutive battery reads in one cycle."
+                },
+                "scanDurationMs": {
+                    "type": "number",
+                    "min": 1000,
+                    "max": 60000,
+                    "step": 500,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 3,
+                    "xl": 3,
+                    "default": 8000,
+                    "label": "Scan duration (ms)",
+                    "help": "How long the BLE scan should run."
+                }
+            }
+        },
+        "_batteries": {
+            "type": "panel",
+            "label": "Batteries",
+            "items": {
+                "_scan": {
+                    "type": "sendto",
+                    "command": "scan",
+                    "jsonData": "{ \"duration\": ${data.scanDurationMs} }",
+                    "result": {
+                        "devices": {
+                            "type": "table",
+                            "title": "Discovered devices",
+                            "items": [
+                                { "title": "MAC", "attr": "address", "type": "text" },
+                                { "title": "Name", "attr": "localName", "type": "text" },
+                                { "title": "RSSI", "attr": "rssi", "type": "number" }
+                            ]
+                        },
+                        "error": {
+                            "type": "alert",
+                            "severity": "error"
+                        }
+                    },
+                    "variant": "contained",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 4,
+                    "lg": 4,
+                    "xl": 4,
+                    "label": "Scan for BLE devices",
+                    "help": "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below."
+                },
+                "batteries": {
+                    "newLine": true,
+                    "type": "table",
+                    "label": "Configured batteries",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12,
+                    "items": [
+                        {
+                            "title": "Enabled",
+                            "attr": "enabled",
+                            "type": "checkbox",
+                            "default": true,
+                            "width": 80
+                        },
+                        {
+                            "title": "Name",
+                            "attr": "name",
+                            "type": "text",
+                            "default": "",
+                            "width": 200,
+                            "filter": true
+                        },
+                        {
+                            "title": "MAC address",
+                            "attr": "mac",
+                            "type": "text",
+                            "default": "",
+                            "width": 220,
+                            "filter": true
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

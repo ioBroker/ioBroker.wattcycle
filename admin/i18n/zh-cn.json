@@ -1,0 +1,21 @@
+{
+    "Main settings": "主要设置",
+    "Batteries": "电池",
+    "Bluetooth adapter": "蓝牙适配器",
+    "Pick the HCI adapter. Restart adapter after change.": "选择 HCI 适配器。修改后请重启适配器。",
+    "Polling interval (ms)": "轮询间隔 (毫秒)",
+    "Interval between full poll cycles, in milliseconds.": "完整轮询周期之间的间隔，单位毫秒。",
+    "Gap between batteries (ms)": "电池之间的间隔 (毫秒)",
+    "Pause between consecutive battery reads in one cycle.": "同一轮询周期内两块电池读取之间的暂停。",
+    "Scan duration (ms)": "扫描时长 (毫秒)",
+    "How long the BLE scan should run.": "BLE 扫描运行时长。",
+    "Scan for BLE devices": "扫描 BLE 设备",
+    "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "通过配置的 HCI 适配器进行 BLE 扫描并列出附近的设备。将 MAC 复制到下方表格。",
+    "Discovered devices": "发现的设备",
+    "Configured batteries": "已配置的电池",
+    "Enabled": "启用",
+    "Name": "名称",
+    "MAC address": "MAC 地址",
+    "MAC": "MAC",
+    "RSSI": "RSSI"
+}

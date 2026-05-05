@@ -1,0 +1,90 @@
+{
+    "common": {
+        "name": "wattcycle",
+        "version": "0.1.0",
+        "news": {
+            "0.1.0": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung"
+            }
+        },
+        "title": "WattCycle BLE Batteries",
+        "titleLang": {
+            "en": "WattCycle BLE Batteries",
+            "de": "WattCycle BLE-Batterien",
+            "ru": "WattCycle BLE Батареи",
+            "pt": "Baterias WattCycle BLE",
+            "nl": "WattCycle BLE-batterijen",
+            "fr": "Batteries WattCycle BLE",
+            "it": "Batterie WattCycle BLE",
+            "es": "Baterías WattCycle BLE",
+            "pl": "Akumulatory WattCycle BLE",
+            "zh-cn": "WattCycle BLE 电池"
+        },
+        "desc": {
+            "en": "Reads WattCycle / XDZN BLE batteries (TDT protocol) and exposes them as devices in ioBroker",
+            "de": "Liest WattCycle / XDZN BLE-Batterien (TDT-Protokoll) und legt sie als Geräte in ioBroker an"
+        },
+        "authors": ["bluefox <dogafox@gmail.com>"],
+        "keywords": ["wattcycle", "xdzn", "battery", "lifepo4", "ble", "bluetooth", "tdt"],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "wattcycle.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.wattcycle/master/admin/wattcycle.png",
+        "readme": "https://github.com/ioBroker/ioBroker.wattcycle/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "energy",
+        "adminUI": {
+            "config": "json"
+        },
+        "compact": true,
+        "messagebox": true,
+        "tier": 3,
+        "dependencies": [
+            {
+                "js-controller": ">=5.0.0"
+            }
+        ],
+        "osDependencies": {
+            "linux": ["bluez", "libbluetooth-dev"]
+        },
+        "connectionType": "local",
+        "dataSource": "poll"
+    },
+    "native": {
+        "hciDevice": 0,
+        "pollInterval": 60000,
+        "perBatteryGapMs": 1000,
+        "scanDurationMs": 8000,
+        "batteries": []
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Bluetooth adapter ready",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
+}

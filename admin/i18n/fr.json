@@ -1,0 +1,21 @@
+{
+    "Main settings": "Paramètres principaux",
+    "Batteries": "Batteries",
+    "Bluetooth adapter": "Adaptateur Bluetooth",
+    "Pick the HCI adapter. Restart adapter after change.": "Choisissez l'adaptateur HCI. Redémarrez l'adaptateur après modification.",
+    "Polling interval (ms)": "Intervalle d'interrogation (ms)",
+    "Interval between full poll cycles, in milliseconds.": "Intervalle entre les cycles complets d'interrogation, en millisecondes.",
+    "Gap between batteries (ms)": "Pause entre les batteries (ms)",
+    "Pause between consecutive battery reads in one cycle.": "Pause entre les lectures consécutives de batteries dans un cycle.",
+    "Scan duration (ms)": "Durée du scan (ms)",
+    "How long the BLE scan should run.": "Durée du scan BLE.",
+    "Scan for BLE devices": "Rechercher les appareils BLE",
+    "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "Lance un scan BLE via l'adaptateur HCI configuré et liste les appareils proches. Copiez une MAC dans le tableau ci-dessous.",
+    "Discovered devices": "Appareils détectés",
+    "Configured batteries": "Batteries configurées",
+    "Enabled": "Activé",
+    "Name": "Nom",
+    "MAC address": "Adresse MAC",
+    "MAC": "MAC",
+    "RSSI": "RSSI"
+}

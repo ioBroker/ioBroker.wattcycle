@@ -1,0 +1,21 @@
+{
+    "Main settings": "Основные настройки",
+    "Batteries": "Батареи",
+    "Bluetooth adapter": "Bluetooth-адаптер",
+    "Pick the HCI adapter. Restart adapter after change.": "Выберите HCI-адаптер. После изменения перезапустите адаптер.",
+    "Polling interval (ms)": "Интервал опроса (мс)",
+    "Interval between full poll cycles, in milliseconds.": "Интервал между полными циклами опроса, в миллисекундах.",
+    "Gap between batteries (ms)": "Пауза между батареями (мс)",
+    "Pause between consecutive battery reads in one cycle.": "Пауза между чтениями соседних батарей в одном цикле.",
+    "Scan duration (ms)": "Длительность сканирования (мс)",
+    "How long the BLE scan should run.": "Сколько времени должен идти BLE-скан.",
+    "Scan for BLE devices": "Сканировать BLE-устройства",
+    "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "Запускает BLE-сканирование через настроенный HCI-адаптер и показывает устройства поблизости. Скопируйте MAC в таблицу ниже.",
+    "Discovered devices": "Найденные устройства",
+    "Configured batteries": "Настроенные батареи",
+    "Enabled": "Активно",
+    "Name": "Имя",
+    "MAC address": "MAC-адрес",
+    "MAC": "MAC",
+    "RSSI": "RSSI"
+}
