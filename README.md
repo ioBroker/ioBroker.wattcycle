@@ -84,6 +84,7 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
 - Linux with BlueZ (`apt install bluez libbluetooth-dev`).
 - Node.js ≥ 20.
 - Adapter must be allowed to access the HCI socket (typically run as root or with `setcap`).
+- Bluetooth adapter must support Bluetooth 5.0 (LE long range).
 
 ## Changelog
 <!--
