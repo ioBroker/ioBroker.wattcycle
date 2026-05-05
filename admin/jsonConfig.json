@@ -70,7 +70,7 @@
                 "_scan": {
                     "type": "sendto",
                     "command": "scan",
-                    "jsonData": "{ \"duration\": ${data.scanDurationMs} }",
+                    "jsonData": "{ \"duration\": ${data.scanDurationMs}, \"hciDevice\": ${data.hciDevice} }",
                     "result": {
                         "devices": {
                             "type": "table",

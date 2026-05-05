@@ -8,6 +8,14 @@ interface HciAdapterInfo {
     label: string;
 }
 
+function readSysFile(path: string): string {
+    try {
+        return readFileSync(path, 'utf8').trim();
+    } catch {
+        return '';
+    }
+}
+
 function listHciAdapters(): HciAdapterInfo[] {
     const out: HciAdapterInfo[] = [];
     const sysPath = '/sys/class/bluetooth';
@@ -19,13 +27,21 @@ function listHciAdapters(): HciAdapterInfo[] {
                     continue;
                 }
                 const id = parseInt(m[1], 10);
-                let address = '';
-                try {
-                    address = readFileSync(`${sysPath}/${name}/address`, 'utf8').trim();
-                } catch {
-                    // ignore
+                const base = `${sysPath}/${name}`;
+                const address = readSysFile(`${base}/address`);
+                // USB dongles expose these via the parent device symlink.
+                const product = readSysFile(`${base}/device/product`);
+                const manufacturer = readSysFile(`${base}/device/manufacturer`);
+                const friendly = product || manufacturer;
+                const parts: string[] = [];
+                if (friendly) {
+                    parts.push(friendly);
                 }
-                out.push({ value: id, label: address ? `${name} (${address})` : name });
+                if (address) {
+                    parts.push(address);
+                }
+                const label = parts.length ? `${name} — ${parts.join(' · ')}` : name;
+                out.push({ value: id, label });
             }
         }
     } catch {
@@ -145,6 +161,7 @@ class WattcycleAdapter extends Adapter {
 
     private ble: WattCycleBle | null = null;
     private noble: any = null;
+    private currentHci = -1;
     private pollTimer: NodeJS.Timeout | null = null;
     private polling = false;
     private stopping = false;
@@ -191,29 +208,11 @@ class WattcycleAdapter extends Adapter {
             return;
         }
 
-        const hciDevice = parseInt(this.config.hciDevice as string, 10);
-        const hci = Number.isFinite(hciDevice) && hciDevice >= 0 ? hciDevice : 0;
-        process.env.NOBLE_HCI_DEVICE_ID = String(hci);
+        const cfgHci = parseInt(this.config.hciDevice as string, 10);
+        const hci = Number.isFinite(cfgHci) && cfgHci >= 0 ? cfgHci : 0;
 
         try {
-            const nobleModule = require('@stoprocent/noble');
-            this.noble = nobleModule.withBindings ? nobleModule.withBindings('hci') : nobleModule;
-        } catch (e) {
-            this.log.error(`Cannot load @stoprocent/noble: ${(e as Error).message}`);
-            await this.setStateAsync('info.connection', false, true);
-            return;
-        }
-
-        this.ble = new WattCycleBle(this.noble, {
-            info: m => this.log.info(m),
-            warn: m => this.log.warn(m),
-            error: m => this.log.error(m),
-            debug: m => this.log.debug(m),
-        });
-
-        try {
-            await this.ble.waitPoweredOn(15000);
-            this.log.info(`Bluetooth adapter hci${hci} powered on`);
+            await this.setupBle(hci);
             await this.setStateAsync('info.connection', true, true);
         } catch (e) {
             this.log.error(`Bluetooth not ready: ${(e as Error).message}`);
@@ -235,6 +234,49 @@ class WattcycleAdapter extends Adapter {
         const pollMs = Number.isFinite(interval) && interval >= 5000 ? interval : 60000;
         this.log.info(`Starting polling for ${enabled.length} battery/batteries every ${pollMs} ms`);
         this.schedulePoll(0);
+    }
+
+    private async setupBle(hciId: number): Promise<void> {
+        if (this.noble && this.currentHci === hciId) {
+            return;
+        }
+
+        if (this.ble) {
+            try {
+                await this.ble.stop();
+            } catch {
+                // ignore
+            }
+        }
+
+        process.env.NOBLE_HCI_DEVICE_ID = String(hciId);
+
+        // The HCI binding reads NOBLE_HCI_DEVICE_ID only when first required.
+        // Drop noble from the cache so a switch to a different adapter re-initialises.
+        for (const key of Object.keys(require.cache)) {
+            if (key.includes('@stoprocent') && key.includes('noble')) {
+                delete require.cache[key];
+            }
+        }
+
+        const nobleModule = require('@stoprocent/noble');
+        // Prefer explicit option when supported by the library.
+        try {
+            this.noble = nobleModule.withBindings('hci', { deviceId: hciId });
+        } catch {
+            this.noble = nobleModule.withBindings ? nobleModule.withBindings('hci') : nobleModule;
+        }
+        this.currentHci = hciId;
+
+        this.ble = new WattCycleBle(this.noble, {
+            info: m => this.log.info(m),
+            warn: m => this.log.warn(m),
+            error: m => this.log.error(m),
+            debug: m => this.log.debug(m),
+        });
+
+        await this.ble.waitPoweredOn(15000);
+        this.log.info(`Bluetooth adapter hci${hciId} powered on`);
     }
 
     private schedulePoll(delay: number): void {
@@ -404,16 +446,14 @@ class WattcycleAdapter extends Adapter {
         }
         switch (obj.command) {
             case 'scan': {
-                if (!this.ble) {
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, { error: 'BLE not initialized' }, obj.callback);
-                    }
-                    return;
-                }
+                const msg = (obj.message as { duration?: number; hciDevice?: number | string }) || {};
                 const ms =
-                    parseInt((obj.message as { duration?: number })?.duration as unknown as string, 10) ||
+                    parseInt(msg.duration as unknown as string, 10) ||
                     parseInt(this.config.scanDurationMs as string, 10) ||
                     8000;
+                const reqHci = parseInt(msg.hciDevice as unknown as string, 10);
+                const targetHci = Number.isFinite(reqHci) && reqHci >= 0 ? reqHci : this.currentHci;
+
                 if (this.polling) {
                     if (obj.callback) {
                         this.sendTo(
@@ -425,8 +465,16 @@ class WattcycleAdapter extends Adapter {
                     }
                     return;
                 }
+
                 try {
-                    this.log.info(`Scanning for BLE devices for ${ms} ms...`);
+                    if (targetHci !== this.currentHci) {
+                        this.log.info(`Switching scan to hci${targetHci} (was hci${this.currentHci})`);
+                        await this.setupBle(targetHci);
+                    }
+                    if (!this.ble) {
+                        throw new Error('BLE not initialized');
+                    }
+                    this.log.info(`Scanning on hci${this.currentHci} for ${ms} ms...`);
                     const list: ScanResult[] = await this.ble.scan(ms);
                     this.log.info(`Scan finished: ${list.length} device(s) found`);
                     if (obj.callback) {
