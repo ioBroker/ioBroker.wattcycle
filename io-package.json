@@ -5,7 +5,16 @@
         "news": {
             "0.1.0": {
                 "en": "initial release",
-                "de": "Erstveröffentlichung"
+                "de": "Erstveröffentlichung",
+                "ru": "первый релиз",
+                "pt": "lançamento inicial",
+                "nl": "eerste release",
+                "fr": "première version",
+                "it": "rilascio iniziale",
+                "es": "lanzamiento inicial",
+                "pl": "pierwsze wydanie",
+                "uk": "первый релиз",
+                "zh-cn": "初始版本"
             }
         },
         "title": "WattCycle BLE Batteries",
