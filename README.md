@@ -87,8 +87,8 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
 
 ## Changelog
 <!--
-	Placeholder for the next version (at the beginning of the line):
-	### **WORK IN PROGRESS**
+   Placeholder for the next version (at the beginning of the line):
+   ### **WORK IN PROGRESS**
 -->
 
 ### **WORK IN PROGRESS**
