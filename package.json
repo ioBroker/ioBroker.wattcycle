@@ -56,6 +56,8 @@
     "build": "tsc -p tsconfig.build.json",
     "update-packages": "npx -y npm-check-updates --upgrade",
     "release": "release-script",
+    "test:package": "mocha test/package.test.js --exit",
+    "test:integration": "mocha test/testAdapter.test.js --exit",
     "release-patch": "release-script patch --yes",
     "release-minor": "release-script minor --yes",
     "release-major": "release-script major --yes"
