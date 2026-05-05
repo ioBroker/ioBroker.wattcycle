@@ -150,7 +150,11 @@ const STATUS_STATES: StateDef[] = [
 
 const TOTAL_STATES: StateDef[] = [
     { id: 'soc', name: 'Average state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
+    { id: 'soc_min', name: 'Lowest state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
+    { id: 'soc_max', name: 'Highest state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
     { id: 'voltage', name: 'Average voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
+    { id: 'voltage_min', name: 'Lowest pack voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
+    { id: 'voltage_max', name: 'Highest pack voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
     { id: 'current', name: 'Total current', type: 'number', role: 'value.current', unit: 'A', read: true, write: false },
     { id: 'power', name: 'Total power', type: 'number', role: 'value.power', unit: 'W', read: true, write: false },
     { id: 'remaining_ah', name: 'Total remaining capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
@@ -429,9 +433,14 @@ class WattcycleAdapter extends Adapter {
         const sum = (sel: (a: BatteryAnalog) => number): number => reads.reduce((s, a) => s + sel(a), 0);
         const avg = (sel: (a: BatteryAnalog) => number): number => sum(sel) / n;
         const max = (sel: (a: BatteryAnalog) => number): number => reads.reduce((m, a) => Math.max(m, sel(a)), -Infinity);
+        const min = (sel: (a: BatteryAnalog) => number): number => reads.reduce((m, a) => Math.min(m, sel(a)), Infinity);
 
         await this.setStateAsync('total.soc', r(avg(a => a.soc), 1), true);
+        await this.setStateAsync('total.soc_min', r(min(a => a.soc), 1), true);
+        await this.setStateAsync('total.soc_max', r(max(a => a.soc), 1), true);
         await this.setStateAsync('total.voltage', r(avg(a => a.voltage), 2), true);
+        await this.setStateAsync('total.voltage_min', r(min(a => a.voltage), 2), true);
+        await this.setStateAsync('total.voltage_max', r(max(a => a.voltage), 2), true);
         await this.setStateAsync('total.current', r(sum(a => a.current), 1), true);
         await this.setStateAsync('total.power', r(sum(a => a.power), 1), true);
         await this.setStateAsync('total.remaining_ah', r(sum(a => a.remaining_ah), 1), true);

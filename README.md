@@ -51,7 +51,11 @@ In addition, an aggregate device `wattcycle.<instance>.total` is created (assume
 | State                       | Type   | Unit | Aggregation     |
 |-----------------------------|--------|------|-----------------|
 | `soc`                       | number | %    | average         |
+| `soc_min`                   | number | %    | minimum         |
+| `soc_max`                   | number | %    | maximum         |
 | `voltage`                   | number | V    | average         |
+| `voltage_min`               | number | V    | minimum         |
+| `voltage_max`               | number | V    | maximum         |
 | `current`                   | number | A    | sum             |
 | `power`                     | number | W    | sum             |
 | `remaining_ah`              | number | Ah   | sum             |
