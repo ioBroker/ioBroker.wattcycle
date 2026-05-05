@@ -9,6 +9,8 @@
     "Pause between consecutive battery reads in one cycle.": "Pause entre les lectures consécutives de batteries dans un cycle.",
     "Scan duration (ms)": "Durée du scan (ms)",
     "How long the BLE scan should run.": "Durée du scan BLE.",
+    "Name prefixes": "Préfixes de nom",
+    "Comma-separated list of advertising-name prefixes (case-insensitive). Leave empty to show all devices in the scan.": "Liste de préfixes de nom séparés par des virgules (insensible à la casse). Laissez vide pour afficher tous les appareils du scan.",
     "Scan for BLE devices": "Rechercher les appareils BLE",
     "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "Lance un scan BLE via l'adaptateur HCI configuré et liste les appareils proches. Copiez une MAC dans le tableau ci-dessous.",
     "Discovered devices": "Appareils détectés",

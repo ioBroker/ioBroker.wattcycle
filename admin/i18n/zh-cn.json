@@ -9,6 +9,8 @@
     "Pause between consecutive battery reads in one cycle.": "同一轮询周期内两块电池读取之间的暂停。",
     "Scan duration (ms)": "扫描时长 (毫秒)",
     "How long the BLE scan should run.": "BLE 扫描运行时长。",
+    "Name prefixes": "名称前缀",
+    "Comma-separated list of advertising-name prefixes (case-insensitive). Leave empty to show all devices in the scan.": "广告名称前缀列表，使用逗号分隔（不区分大小写）。留空以在扫描中显示所有设备。",
     "Scan for BLE devices": "扫描 BLE 设备",
     "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "通过配置的 HCI 适配器进行 BLE 扫描并列出附近的设备。将 MAC 复制到下方表格。",
     "Discovered devices": "发现的设备",

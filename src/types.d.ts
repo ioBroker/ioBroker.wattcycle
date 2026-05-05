@@ -9,5 +9,7 @@ export interface WattCycleAdapterConfig {
     pollInterval: number | string;
     perBatteryGapMs: number | string;
     scanDurationMs: number | string;
+    /** Comma-separated list of name prefixes to filter scan results. Empty = no filter. */
+    namePrefixes: string;
     batteries: BatteryEntry[];
 }

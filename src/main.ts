@@ -156,6 +156,27 @@ function macToId(mac: string): string {
     return mac.toLowerCase().replace(/[^a-f0-9]/g, '');
 }
 
+function parsePrefixes(raw: string | undefined): string[] {
+    if (!raw) {
+        return [];
+    }
+    return raw
+        .split(',')
+        .map(p => p.trim().toLowerCase())
+        .filter(p => p.length > 0);
+}
+
+function matchesPrefix(name: string, prefixes: string[]): boolean {
+    if (!prefixes.length) {
+        return true;
+    }
+    if (!name) {
+        return false;
+    }
+    const lower = name.toLowerCase();
+    return prefixes.some(p => lower.startsWith(p));
+}
+
 class WattcycleAdapter extends Adapter {
     declare public config: WattCycleAdapterConfig;
 
@@ -446,13 +467,21 @@ class WattcycleAdapter extends Adapter {
         }
         switch (obj.command) {
             case 'scan': {
-                const msg = (obj.message as { duration?: number; hciDevice?: number | string }) || {};
+                const msg =
+                    (obj.message as {
+                        duration?: number;
+                        hciDevice?: number | string;
+                        namePrefixes?: string;
+                    }) || {};
                 const ms =
                     parseInt(msg.duration as unknown as string, 10) ||
                     parseInt(this.config.scanDurationMs as string, 10) ||
                     8000;
                 const reqHci = parseInt(msg.hciDevice as unknown as string, 10);
                 const targetHci = Number.isFinite(reqHci) && reqHci >= 0 ? reqHci : this.currentHci;
+                const prefixes = parsePrefixes(
+                    typeof msg.namePrefixes === 'string' ? msg.namePrefixes : this.config.namePrefixes,
+                );
 
                 if (this.polling) {
                     if (obj.callback) {
@@ -474,11 +503,28 @@ class WattcycleAdapter extends Adapter {
                     if (!this.ble) {
                         throw new Error('BLE not initialized');
                     }
-                    this.log.info(`Scanning on hci${this.currentHci} for ${ms} ms...`);
-                    const list: ScanResult[] = await this.ble.scan(ms);
-                    this.log.info(`Scan finished: ${list.length} device(s) found`);
+                    this.log.info(
+                        `Scanning on hci${this.currentHci} for ${ms} ms${
+                            prefixes.length ? ` (filter: ${prefixes.join(', ')})` : ''
+                        }...`,
+                    );
+                    const raw: ScanResult[] = await this.ble.scan(ms);
+                    const list = raw.filter(d => matchesPrefix(d.localName, prefixes));
+                    this.log.info(
+                        `Scan finished: ${list.length} matching device(s)` +
+                            (prefixes.length ? ` (out of ${raw.length} total)` : ''),
+                    );
                     if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, { devices: list }, obj.callback);
+                        // Combine the result with current settings
+                        const batteries = this.config.batteries;
+                        for (const item of list) {
+                            this.log.debug(`  ${item.address} — ${item.localName || '<no name>'} (${item.rssi} dBm)`);
+                            if (!batteries.find(it => it.mac === item.address)) {
+                                batteries.push({ name: item.localName, mac: item.address, enabled: true });
+                            }
+                        }
+
+                        this.sendTo(obj.from, obj.command, { native: { batteries } }, obj.callback);
                     }
                 } catch (e) {
                     if (obj.callback) {

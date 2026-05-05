@@ -9,6 +9,8 @@
     "Pause between consecutive battery reads in one cycle.": "Пауза между чтениями соседних батарей в одном цикле.",
     "Scan duration (ms)": "Длительность сканирования (мс)",
     "How long the BLE scan should run.": "Сколько времени должен идти BLE-скан.",
+    "Name prefixes": "Префиксы имени",
+    "Comma-separated list of advertising-name prefixes (case-insensitive). Leave empty to show all devices in the scan.": "Список префиксов имени через запятую (регистр не важен). Пусто — показывать все устройства в скане.",
     "Scan for BLE devices": "Сканировать BLE-устройства",
     "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below.": "Запускает BLE-сканирование через настроенный HCI-адаптер и показывает устройства поблизости. Скопируйте MAC в таблицу ниже.",
     "Discovered devices": "Найденные устройства",

@@ -60,6 +60,18 @@
                     "default": 8000,
                     "label": "Scan duration (ms)",
                     "help": "How long the BLE scan should run."
+                },
+                "namePrefixes": {
+                    "newLine": true,
+                    "type": "text",
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 8,
+                    "lg": 8,
+                    "xl": 8,
+                    "default": "WC,XDZN",
+                    "label": "Name prefixes",
+                    "help": "Comma-separated list of advertising-name prefixes (case-insensitive). Leave empty to show all devices in the scan."
                 }
             }
         },
@@ -70,22 +82,8 @@
                 "_scan": {
                     "type": "sendto",
                     "command": "scan",
-                    "jsonData": "{ \"duration\": ${data.scanDurationMs}, \"hciDevice\": ${data.hciDevice} }",
-                    "result": {
-                        "devices": {
-                            "type": "table",
-                            "title": "Discovered devices",
-                            "items": [
-                                { "title": "MAC", "attr": "address", "type": "text" },
-                                { "title": "Name", "attr": "localName", "type": "text" },
-                                { "title": "RSSI", "attr": "rssi", "type": "number" }
-                            ]
-                        },
-                        "error": {
-                            "type": "alert",
-                            "severity": "error"
-                        }
-                    },
+                    "jsonData": "{ \"duration\": ${data.scanDurationMs}, \"hciDevice\": ${data.hciDevice}, \"namePrefixes\": \"${data.namePrefixes}\" }",
+                    "useNative": true,
                     "variant": "contained",
                     "xs": 12,
                     "sm": 12,
@@ -93,7 +91,7 @@
                     "lg": 4,
                     "xl": 4,
                     "label": "Scan for BLE devices",
-                    "help": "Runs a BLE scan via the configured HCI adapter and lists nearby devices. Copy a MAC into the table below."
+                    "help": "Runs a BLE scan via the configured HCI adapter and lists nearby devices"
                 },
                 "batteries": {
                     "newLine": true,

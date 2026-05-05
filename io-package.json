@@ -61,6 +61,7 @@
         "pollInterval": 60000,
         "perBatteryGapMs": 1000,
         "scanDurationMs": 8000,
+        "namePrefixes": "WC,XDZN",
         "batteries": []
     },
     "objects": [],
