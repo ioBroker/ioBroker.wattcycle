@@ -19,11 +19,21 @@
             "it": "Batterie WattCycle BLE",
             "es": "Baterías WattCycle BLE",
             "pl": "Akumulatory WattCycle BLE",
+            "uk": "WattCycle BLE батареї",
             "zh-cn": "WattCycle BLE 电池"
         },
         "desc": {
             "en": "Reads WattCycle / XDZN BLE batteries (TDT protocol) and exposes them as devices in ioBroker",
-            "de": "Liest WattCycle / XDZN BLE-Batterien (TDT-Protokoll) und legt sie als Geräte in ioBroker an"
+            "de": "Liest WattCycle / XDZN BLE-Batterien (TDT-Protokoll) und legt sie als Geräte in ioBroker an",
+            "ru": "Читает батареи WattCycle / XDZN BLE (протокол TDT) и отображает их как устройства в ioBroker",
+            "pt": "Lê as baterias WattCycle / XDZN BLE (protoc,olo TDT) e as expõe como dispositivos no ioBroker",
+            "nl": "Leest WattCycle / XDZN BLE-batterijen (TDT-protocol) en maakt ze als apparaten in ioBroker",
+            "fr": "Lit les batteries WattCycle / XDZN BLE (protocole TDT) et les expose comme des appareils dans ioBroker",
+            "it": "Legge le batterie WattCycle / XDZN BLE (protocollo TDT) e le espone come dispositivi in ioBroker",
+            "es": "Lee las baterías WattCycle / XDZN BLE (protocolo TDT) y las expone como dispositivos en ioBroker",
+            "pl": "Odczytuje baterie WattCycle / XDZN BLE (protokół TDT) i udostępnia je jako urządzenia w ioBroker",
+            "uk": "Читає батареї WattCycle / XDZN BLE (протокол TDT) і відображає їх як пристрої в ioBroker",
+            "zh-cn": "读取 WattCycle / XDZN BLE 电池（TDT 协议）并将其作为设备在 ioBroker 中显示"
         },
         "authors": ["bluefox <dogafox@gmail.com>"],
         "keywords": ["wattcycle", "xdzn", "battery", "lifepo4", "ble", "bluetooth", "tdt"],
@@ -47,7 +57,12 @@
         "tier": 3,
         "dependencies": [
             {
-                "js-controller": ">=5.0.0"
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.6.20"
             }
         ],
         "osDependencies": {

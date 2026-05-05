@@ -80,7 +80,7 @@
             "label": "Batteries",
             "items": {
                 "_scan": {
-                    "type": "sendto",
+                    "type": "sendTo",
                     "command": "scan",
                     "jsonData": "{ \"duration\": ${data.scanDurationMs}, \"hciDevice\": ${data.hciDevice}, \"namePrefixes\": \"${data.namePrefixes}\" }",
                     "useNative": true,
