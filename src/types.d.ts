@@ -5,6 +5,7 @@ export interface BatteryEntry {
 }
 
 export interface WattCycleAdapterConfig {
+    /** HCI device selector. Either a controller MAC (BD_ADDR, e.g. "AA:BB:CC:DD:EE:FF") — stable across reboots — or a numeric hciX index for legacy configs. */
     hciDevice: number | string;
     pollInterval: number | string;
     perBatteryGapMs: number | string;

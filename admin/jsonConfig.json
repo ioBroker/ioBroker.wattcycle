@@ -15,8 +15,9 @@
                     "md": 4,
                     "lg": 4,
                     "xl": 4,
-                    "default": 0,
-                    "label": "Bluetooth adapter"
+                    "default": "",
+                    "label": "Bluetooth adapter",
+                    "help": "Selects the Bluetooth controller by MAC address (BD_ADDR). MAC is stable across reboots, hciX numbering is not."
                 },
                 "pollInterval": {
                     "newLine": true,
@@ -82,7 +83,7 @@
                 "_scan": {
                     "type": "sendTo",
                     "command": "scan",
-                    "jsonData": "{ \"duration\": ${data.scanDurationMs}, \"hciDevice\": ${data.hciDevice}, \"namePrefixes\": \"${data.namePrefixes}\" }",
+                    "jsonData": "{ \"duration\": ${data.scanDurationMs}, \"hciDevice\": \"${data.hciDevice}\", \"namePrefixes\": \"${data.namePrefixes}\" }",
                     "useNative": true,
                     "variant": "contained",
                     "xs": 12,

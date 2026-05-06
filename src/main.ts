@@ -4,9 +4,16 @@ import type { BatteryEntry, WattCycleAdapterConfig } from './types';
 import { WattCycleBle, type BatteryAnalog, type BatteryProduct, type ScanResult } from './lib/battery';
 
 interface HciAdapterInfo {
-    value: number;
+    value: number | string;
     label: string;
 }
+
+interface HciAdapterEntry {
+    id: number;
+    address: string;
+}
+
+const MAC_RE = /^[0-9a-f]{2}(?::[0-9a-f]{2}){5}$/i;
 
 function readSysFile(path: string): string {
     try {
@@ -14,6 +21,41 @@ function readSysFile(path: string): string {
     } catch {
         return '';
     }
+}
+
+function readHciAdapters(): HciAdapterEntry[] {
+    const out: HciAdapterEntry[] = [];
+    const sysPath = '/sys/class/bluetooth';
+    try {
+        if (existsSync(sysPath)) {
+            for (const name of readdirSync(sysPath)) {
+                const m = /^hci(\d+)$/.exec(name);
+                if (!m) {
+                    continue;
+                }
+                out.push({
+                    id: parseInt(m[1], 10),
+                    address: readSysFile(`${sysPath}/${name}/address`).toUpperCase(),
+                });
+            }
+        }
+    } catch {
+        // ignore
+    }
+    out.sort((a, b) => a.id - b.id);
+    return out;
+}
+
+// Resolve a configured value (MAC string or numeric index) to the current hciX id.
+// Returns -1 if a MAC was given but no controller currently exposes it.
+function resolveHciId(value: number | string | undefined): number {
+    if (typeof value === 'string' && MAC_RE.test(value.trim())) {
+        const wanted = value.trim().toUpperCase();
+        const match = readHciAdapters().find(a => a.address === wanted);
+        return match ? match.id : -1;
+    }
+    const n = parseInt(value as string, 10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
 }
 
 function listHciAdapters(): HciAdapterInfo[] {
@@ -28,7 +70,7 @@ function listHciAdapters(): HciAdapterInfo[] {
                 }
                 const id = parseInt(m[1], 10);
                 const base = `${sysPath}/${name}`;
-                const address = readSysFile(`${base}/address`);
+                const address = readSysFile(`${base}/address`).toUpperCase();
                 // USB dongles expose these via the parent device symlink.
                 const product = readSysFile(`${base}/device/product`);
                 const manufacturer = readSysFile(`${base}/device/manufacturer`);
@@ -41,13 +83,13 @@ function listHciAdapters(): HciAdapterInfo[] {
                     parts.push(address);
                 }
                 const label = parts.length ? `${name} — ${parts.join(' · ')}` : name;
-                out.push({ value: id, label });
+                // Prefer the MAC as stored value: stable across reboots when hciX renumbering occurs.
+                out.push({ value: address || id, label });
             }
         }
     } catch {
         // ignore
     }
-    out.sort((a, b) => a.value - b.value);
     return out;
 }
 
@@ -249,8 +291,15 @@ class WattcycleAdapter extends Adapter {
             return;
         }
 
-        const cfgHci = parseInt(this.config.hciDevice as string, 10);
-        const hci = Number.isFinite(cfgHci) && cfgHci >= 0 ? cfgHci : 0;
+        const hci = resolveHciId(this.config.hciDevice);
+        if (hci < 0) {
+            this.log.error(
+                `Configured Bluetooth controller MAC ${String(this.config.hciDevice)} is not present. ` +
+                    `Available: ${readHciAdapters().map(a => `hci${a.id}=${a.address || '?'}`).join(', ') || 'none'}`,
+            );
+            await this.setStateAsync('info.connection', false, true);
+            return;
+        }
 
         try {
             await this.setupBle(hci);
@@ -557,8 +606,20 @@ class WattcycleAdapter extends Adapter {
                     parseInt(msg.duration as unknown as string, 10) ||
                     parseInt(this.config.scanDurationMs as string, 10) ||
                     8000;
-                const reqHci = parseInt(msg.hciDevice as unknown as string, 10);
-                const targetHci = Number.isFinite(reqHci) && reqHci >= 0 ? reqHci : this.currentHci;
+                const targetHci = msg.hciDevice !== undefined && msg.hciDevice !== ''
+                    ? resolveHciId(msg.hciDevice)
+                    : this.currentHci;
+                if (targetHci < 0) {
+                    if (obj.callback) {
+                        this.sendTo(
+                            obj.from,
+                            obj.command,
+                            { error: `Controller ${String(msg.hciDevice)} not present on this host` },
+                            obj.callback,
+                        );
+                    }
+                    return;
+                }
                 const prefixes = parsePrefixes(
                     typeof msg.namePrefixes === 'string' ? msg.namePrefixes : this.config.namePrefixes,
                 );
