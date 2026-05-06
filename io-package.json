@@ -1,114 +1,140 @@
 {
-    "common": {
-        "name": "wattcycle",
-        "version": "0.1.0",
-        "news": {
-            "0.1.0": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "первый релиз",
-                "pt": "lançamento inicial",
-                "nl": "eerste release",
-                "fr": "première version",
-                "it": "rilascio iniziale",
-                "es": "lanzamiento inicial",
-                "pl": "pierwsze wydanie",
-                "uk": "первый релиз",
-                "zh-cn": "初始版本"
-            }
-        },
-        "titleLang": {
-            "en": "WattCycle BLE Batteries",
-            "de": "WattCycle BLE-Batterien",
-            "ru": "WattCycle BLE Батареи",
-            "pt": "Baterias WattCycle BLE",
-            "nl": "WattCycle BLE-batterijen",
-            "fr": "Batteries WattCycle BLE",
-            "it": "Batterie WattCycle BLE",
-            "es": "Baterías WattCycle BLE",
-            "pl": "Akumulatory WattCycle BLE",
-            "uk": "WattCycle BLE батареї",
-            "zh-cn": "WattCycle BLE 电池"
-        },
-        "desc": {
-            "en": "Reads WattCycle / XDZN BLE batteries (TDT protocol) and exposes them as devices in ioBroker",
-            "de": "Liest WattCycle / XDZN BLE-Batterien (TDT-Protokoll) und legt sie als Geräte in ioBroker an",
-            "ru": "Читает батареи WattCycle / XDZN BLE (протокол TDT) и отображает их как устройства в ioBroker",
-            "pt": "Lê as baterias WattCycle / XDZN BLE (protoc,olo TDT) e as expõe como dispositivos no ioBroker",
-            "nl": "Leest WattCycle / XDZN BLE-batterijen (TDT-protocol) en maakt ze als apparaten in ioBroker",
-            "fr": "Lit les batteries WattCycle / XDZN BLE (protocole TDT) et les expose comme des appareils dans ioBroker",
-            "it": "Legge le batterie WattCycle / XDZN BLE (protocollo TDT) e le espone come dispositivi in ioBroker",
-            "es": "Lee las baterías WattCycle / XDZN BLE (protocolo TDT) y las expone como dispositivos en ioBroker",
-            "pl": "Odczytuje baterie WattCycle / XDZN BLE (protokół TDT) i udostępnia je jako urządzenia w ioBroker",
-            "uk": "Читає батареї WattCycle / XDZN BLE (протокол TDT) і відображає їх як пристрої в ioBroker",
-            "zh-cn": "读取 WattCycle / XDZN BLE 电池（TDT 协议）并将其作为设备在 ioBroker 中显示"
-        },
-        "authors": ["bluefox <dogafox@gmail.com>"],
-        "keywords": ["wattcycle", "xdzn", "battery", "lifepo4", "ble", "bluetooth", "tdt"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "wattcycle.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.wattcycle/master/admin/wattcycle.png",
-        "readme": "https://github.com/ioBroker/ioBroker.wattcycle/blob/master/README.md",
-        "loglevel": "info",
-        "mode": "daemon",
-        "type": "energy",
-        "adminUI": {
-            "config": "json"
-        },
-        "compact": true,
-        "messagebox": true,
-        "tier": 3,
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.6.20"
-            }
-        ],
-        "osDependencies": {
-            "linux": ["bluez", "libbluetooth-dev"]
-        },
-        "connectionType": "local",
-        "dataSource": "poll"
+  "common": {
+    "name": "wattcycle",
+    "version": "0.2.0",
+    "news": {
+      "0.2.0": {
+        "en": "Use MAC address as unique identifier bluetooth adapter",
+        "de": "MAC-Adresse als eindeutige Kennung bluetooth Adapter verwenden",
+        "ru": "Используйте MAC-адрес в качестве уникального идентификатора Bluetooth-адаптера",
+        "pt": "Usar o endereço MAC como adaptador único identificador bluetooth",
+        "nl": "Gebruik MAC-adres als unieke identificatie bluetooth-adapter",
+        "fr": "Utiliser l'adresse MAC comme identifiant unique adaptateur bluetooth",
+        "it": "Utilizzare l'indirizzo MAC come univoco identificatore adattatore bluetooth",
+        "es": "Utilice la dirección MAC como adaptador único de identificación bluetooth",
+        "pl": "Użyj adresu MAC jako unikalnego identyfikatora adaptera bluetooth",
+        "uk": "Використовуйте MAC адресу як унікальний адаптер bluetooth",
+        "zh-cn": "使用 MAC 地址作为唯一标识的蓝牙适配器"
+      },
+      "0.1.0": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "первый релиз",
+        "pt": "lançamento inicial",
+        "nl": "eerste release",
+        "fr": "première version",
+        "it": "rilascio iniziale",
+        "es": "lanzamiento inicial",
+        "pl": "pierwsze wydanie",
+        "uk": "первый релиз",
+        "zh-cn": "初始版本"
+      }
     },
-    "native": {
-        "hciDevice": 0,
-        "pollInterval": 60000,
-        "perBatteryGapMs": 1000,
-        "scanDurationMs": 8000,
-        "namePrefixes": "WC,XDZN",
-        "batteries": []
+    "titleLang": {
+      "en": "WattCycle BLE Batteries",
+      "de": "WattCycle BLE-Batterien",
+      "ru": "WattCycle BLE Батареи",
+      "pt": "Baterias WattCycle BLE",
+      "nl": "WattCycle BLE-batterijen",
+      "fr": "Batteries WattCycle BLE",
+      "it": "Batterie WattCycle BLE",
+      "es": "Baterías WattCycle BLE",
+      "pl": "Akumulatory WattCycle BLE",
+      "uk": "WattCycle BLE батареї",
+      "zh-cn": "WattCycle BLE 电池"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "Bluetooth adapter ready",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
-    ]
+    "desc": {
+      "en": "Reads WattCycle / XDZN BLE batteries (TDT protocol) and exposes them as devices in ioBroker",
+      "de": "Liest WattCycle / XDZN BLE-Batterien (TDT-Protokoll) und legt sie als Geräte in ioBroker an",
+      "ru": "Читает батареи WattCycle / XDZN BLE (протокол TDT) и отображает их как устройства в ioBroker",
+      "pt": "Lê as baterias WattCycle / XDZN BLE (protoc,olo TDT) e as expõe como dispositivos no ioBroker",
+      "nl": "Leest WattCycle / XDZN BLE-batterijen (TDT-protocol) en maakt ze als apparaten in ioBroker",
+      "fr": "Lit les batteries WattCycle / XDZN BLE (protocole TDT) et les expose comme des appareils dans ioBroker",
+      "it": "Legge le batterie WattCycle / XDZN BLE (protocollo TDT) e le espone come dispositivi in ioBroker",
+      "es": "Lee las baterías WattCycle / XDZN BLE (protocolo TDT) y las expone como dispositivos en ioBroker",
+      "pl": "Odczytuje baterie WattCycle / XDZN BLE (protokół TDT) i udostępnia je jako urządzenia w ioBroker",
+      "uk": "Читає батареї WattCycle / XDZN BLE (протокол TDT) і відображає їх як пристрої в ioBroker",
+      "zh-cn": "读取 WattCycle / XDZN BLE 电池（TDT 协议）并将其作为设备在 ioBroker 中显示"
+    },
+    "authors": [
+      "bluefox <dogafox@gmail.com>"
+    ],
+    "keywords": [
+      "wattcycle",
+      "xdzn",
+      "battery",
+      "lifepo4",
+      "ble",
+      "bluetooth",
+      "tdt"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "wattcycle.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/ioBroker/ioBroker.wattcycle/master/admin/wattcycle.png",
+    "readme": "https://github.com/ioBroker/ioBroker.wattcycle/blob/master/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "energy",
+    "adminUI": {
+      "config": "json"
+    },
+    "compact": true,
+    "messagebox": true,
+    "tier": 3,
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.6.20"
+      }
+    ],
+    "osDependencies": {
+      "linux": [
+        "bluez",
+        "libbluetooth-dev"
+      ]
+    },
+    "connectionType": "local",
+    "dataSource": "poll"
+  },
+  "native": {
+    "hciDevice": 0,
+    "pollInterval": 60000,
+    "perBatteryGapMs": 1000,
+    "scanDurationMs": 8000,
+    "namePrefixes": "WC,XDZN",
+    "batteries": []
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Bluetooth adapter ready",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }

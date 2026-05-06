@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sudo cat /sys/class/bluetooth/hci0/address)",
+      "Bash(hciconfig -a)",
+      "Bash(node *)",
+      "Read(//opt/iobroker/node_modules/@stoprocent/bluetooth-hci-socket/lib/**)",
+      "Read(//opt/iobroker/node_modules/@stoprocent/bluetooth-hci-socket/**)",
+      "Bash(npm run *)"
+    ]
+  }
+}
