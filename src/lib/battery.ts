@@ -105,8 +105,9 @@ function parseAnalog(payload: Buffer): BatteryAnalog {
         cellTemps.push((payload.readUInt16BE(o) - 2730) / 10.0);
         o += 2;
     }
-    let current: number;
-    [current, o] = parseCurrentSigned(payload, o);
+    const result = parseCurrentSigned(payload, o);
+    const current = result[0];
+    o = result[1];
     const voltage = payload.readUInt16BE(o) / 100.0;
     o += 2;
     const remCap = payload.readUInt16BE(o) / 10.0;
@@ -146,6 +147,7 @@ function parseProduct(payload: Buffer): BatteryProduct {
             serial: `unexpected length ${payload.length}`,
         };
     }
+    // eslint-disable-next-line no-control-regex
     const trim = (b: Buffer): string => b.toString('ascii').replace(/[\x00 ]+$/g, '');
     return {
         model_or_fw: trim(payload.subarray(0, 20)),
@@ -223,11 +225,12 @@ export class WattCycleBle {
             return;
         }
         await new Promise<void>((resolve, reject) => {
+            let onState: ((s: string) => void) | null = null;
             const timer = setTimeout(() => {
                 this.noble.removeListener('stateChange', onState);
                 reject(new Error(`Bluetooth adapter not powered on (state=${this.noble._state || this.noble.state})`));
             }, timeoutMs);
-            const onState = (s: string): void => {
+            onState = (s: string): void => {
                 if (s === 'poweredOn') {
                     clearTimeout(timer);
                     this.noble.removeListener('stateChange', onState);
@@ -284,11 +287,15 @@ export class WattCycleBle {
         const target = targetMac.toLowerCase();
         return new Promise((resolve, reject) => {
             let done = false;
+            let onDiscover: ((p: any) => Promise<void>) | null = null;
+            let timer: NodeJS.Timeout | null = null;
             const cleanup = (): void => {
                 this.noble.removeListener('discover', onDiscover);
-                clearTimeout(timer);
+                if (timer) {
+                    clearTimeout(timer);
+                }
             };
-            const timer = setTimeout(async () => {
+            timer = setTimeout(async () => {
                 if (done) {
                     return;
                 }
@@ -301,7 +308,7 @@ export class WattCycleBle {
                 }
                 reject(new Error(`Scan timeout: ${target} not found`));
             }, SCAN_TIMEOUT_MS);
-            const onDiscover = async (p: any): Promise<void> => {
+            onDiscover = async (p: any): Promise<void> => {
                 if (done) {
                     return;
                 }

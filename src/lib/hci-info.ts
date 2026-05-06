@@ -37,7 +37,6 @@ interface HciSocketCtor {
 
 function loadHciSocket(): HciSocketCtor | null {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const mod = require('@stoprocent/bluetooth-hci-socket') as {
             loadDriver?: (kind: string) => HciSocketCtor;
         };
@@ -101,13 +100,16 @@ function probe(Ctor: HciSocketCtor, devId: number, timeoutMs: number): Promise<H
         let address: string | null = null;
         let name: string | null = null;
         let done = false;
+        let timer: NodeJS.Timeout | null = null;
 
         const finish = (result: HciInfo | null): void => {
             if (done) {
                 return;
             }
             done = true;
-            clearTimeout(timer);
+            if (timer) {
+                clearTimeout(timer);
+            }
             try {
                 s.stop();
             } catch {
@@ -115,7 +117,7 @@ function probe(Ctor: HciSocketCtor, devId: number, timeoutMs: number): Promise<H
             }
             resolve(result);
         };
-        const timer = setTimeout(() => {
+        timer = setTimeout(() => {
             finish(address ? { devId, address, name: name ?? '' } : null);
         }, timeoutMs);
 

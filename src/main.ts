@@ -29,9 +29,7 @@ async function readHciAdapters(): Promise<HciAdapterEntry[]> {
     try {
         const infos = await readHciInfos();
         if (infos.length) {
-            return infos
-                .map(i => ({ id: i.devId, address: i.address.toUpperCase() }))
-                .sort((a, b) => a.id - b.id);
+            return infos.map(i => ({ id: i.devId, address: i.address.toUpperCase() })).sort((a, b) => a.id - b.id);
         }
     } catch {
         // fall through
@@ -228,21 +226,117 @@ const STATUS_STATES: StateDef[] = [
 ];
 
 const TOTAL_STATES: StateDef[] = [
-    { id: 'soc', name: 'Average state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
-    { id: 'soc_min', name: 'Lowest state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
-    { id: 'soc_max', name: 'Highest state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
-    { id: 'voltage', name: 'Average voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
-    { id: 'voltage_min', name: 'Lowest pack voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
-    { id: 'voltage_max', name: 'Highest pack voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
-    { id: 'current', name: 'Total current', type: 'number', role: 'value.current', unit: 'A', read: true, write: false },
+    {
+        id: 'soc',
+        name: 'Average state of charge',
+        type: 'number',
+        role: 'value.battery',
+        unit: '%',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'soc_min',
+        name: 'Lowest state of charge',
+        type: 'number',
+        role: 'value.battery',
+        unit: '%',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'soc_max',
+        name: 'Highest state of charge',
+        type: 'number',
+        role: 'value.battery',
+        unit: '%',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'voltage',
+        name: 'Average voltage',
+        type: 'number',
+        role: 'value.voltage',
+        unit: 'V',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'voltage_min',
+        name: 'Lowest pack voltage',
+        type: 'number',
+        role: 'value.voltage',
+        unit: 'V',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'voltage_max',
+        name: 'Highest pack voltage',
+        type: 'number',
+        role: 'value.voltage',
+        unit: 'V',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'current',
+        name: 'Total current',
+        type: 'number',
+        role: 'value.current',
+        unit: 'A',
+        read: true,
+        write: false,
+    },
     { id: 'power', name: 'Total power', type: 'number', role: 'value.power', unit: 'W', read: true, write: false },
-    { id: 'remaining_ah', name: 'Total remaining capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    {
+        id: 'remaining_ah',
+        name: 'Total remaining capacity',
+        type: 'number',
+        role: 'value',
+        unit: 'Ah',
+        read: true,
+        write: false,
+    },
     { id: 'total_ah', name: 'Total capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
-    { id: 'design_ah', name: 'Total design capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    {
+        id: 'design_ah',
+        name: 'Total design capacity',
+        type: 'number',
+        role: 'value',
+        unit: 'Ah',
+        read: true,
+        write: false,
+    },
     { id: 'cycles_avg', name: 'Average cycle count', type: 'number', role: 'value', read: true, write: false },
-    { id: 'cell_spread_mv_max', name: 'Max cell spread', type: 'number', role: 'value', unit: 'mV', read: true, write: false },
-    { id: 'mos_temp_max', name: 'Max MOSFET temperature', type: 'number', role: 'value.temperature', unit: '°C', read: true, write: false },
-    { id: 'pcb_temp_max', name: 'Max PCB temperature', type: 'number', role: 'value.temperature', unit: '°C', read: true, write: false },
+    {
+        id: 'cell_spread_mv_max',
+        name: 'Max cell spread',
+        type: 'number',
+        role: 'value',
+        unit: 'mV',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'mos_temp_max',
+        name: 'Max MOSFET temperature',
+        type: 'number',
+        role: 'value.temperature',
+        unit: '°C',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'pcb_temp_max',
+        name: 'Max PCB temperature',
+        type: 'number',
+        role: 'value.temperature',
+        unit: '°C',
+        read: true,
+        write: false,
+    },
     { id: 'count', name: 'Number of reachable batteries', type: 'number', role: 'value', read: true, write: false },
     { id: 'lastUpdate', name: 'Last aggregate update', type: 'number', role: 'date', read: true, write: false },
 ];
@@ -310,7 +404,7 @@ class WattcycleAdapter extends Adapter {
             }
         };
         if (this.ble) {
-            this.ble.stop().finally(finish);
+            void this.ble.stop().finally(finish);
         } else {
             finish();
         }
@@ -519,24 +613,124 @@ class WattcycleAdapter extends Adapter {
         }
         const sum = (sel: (a: BatteryAnalog) => number): number => reads.reduce((s, a) => s + sel(a), 0);
         const avg = (sel: (a: BatteryAnalog) => number): number => sum(sel) / n;
-        const max = (sel: (a: BatteryAnalog) => number): number => reads.reduce((m, a) => Math.max(m, sel(a)), -Infinity);
-        const min = (sel: (a: BatteryAnalog) => number): number => reads.reduce((m, a) => Math.min(m, sel(a)), Infinity);
+        const max = (sel: (a: BatteryAnalog) => number): number =>
+            reads.reduce((m, a) => Math.max(m, sel(a)), -Infinity);
+        const min = (sel: (a: BatteryAnalog) => number): number =>
+            reads.reduce((m, a) => Math.min(m, sel(a)), Infinity);
 
-        await this.setStateAsync('total.soc', r(avg(a => a.soc), 1), true);
-        await this.setStateAsync('total.soc_min', r(min(a => a.soc), 1), true);
-        await this.setStateAsync('total.soc_max', r(max(a => a.soc), 1), true);
-        await this.setStateAsync('total.voltage', r(avg(a => a.voltage), 2), true);
-        await this.setStateAsync('total.voltage_min', r(min(a => a.voltage), 2), true);
-        await this.setStateAsync('total.voltage_max', r(max(a => a.voltage), 2), true);
-        await this.setStateAsync('total.current', r(sum(a => a.current), 1), true);
-        await this.setStateAsync('total.power', r(sum(a => a.power), 1), true);
-        await this.setStateAsync('total.remaining_ah', r(sum(a => a.remaining_ah), 1), true);
-        await this.setStateAsync('total.total_ah', r(sum(a => a.total_ah), 1), true);
-        await this.setStateAsync('total.design_ah', r(sum(a => a.design_ah), 1), true);
-        await this.setStateAsync('total.cycles_avg', r(avg(a => a.cycles), 1), true);
+        await this.setStateAsync(
+            'total.soc',
+            r(
+                avg(a => a.soc),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.soc_min',
+            r(
+                min(a => a.soc),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.soc_max',
+            r(
+                max(a => a.soc),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.voltage',
+            r(
+                avg(a => a.voltage),
+                2,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.voltage_min',
+            r(
+                min(a => a.voltage),
+                2,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.voltage_max',
+            r(
+                max(a => a.voltage),
+                2,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.current',
+            r(
+                sum(a => a.current),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.power',
+            r(
+                sum(a => a.power),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.remaining_ah',
+            r(
+                sum(a => a.remaining_ah),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.total_ah',
+            r(
+                sum(a => a.total_ah),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.design_ah',
+            r(
+                sum(a => a.design_ah),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.cycles_avg',
+            r(
+                avg(a => a.cycles),
+                1,
+            ),
+            true,
+        );
         await this.setStateAsync('total.cell_spread_mv_max', Math.round(max(a => a.cell_spread_mv)), true);
-        await this.setStateAsync('total.mos_temp_max', r(max(a => a.mos_temp), 1), true);
-        await this.setStateAsync('total.pcb_temp_max', r(max(a => a.pcb_temp), 1), true);
+        await this.setStateAsync(
+            'total.mos_temp_max',
+            r(
+                max(a => a.mos_temp),
+                1,
+            ),
+            true,
+        );
+        await this.setStateAsync(
+            'total.pcb_temp_max',
+            r(
+                max(a => a.pcb_temp),
+                1,
+            ),
+            true,
+        );
     }
 
     private getDeviceId(bat: BatteryEntry): string {
@@ -644,9 +838,10 @@ class WattcycleAdapter extends Adapter {
                     parseInt(msg.duration as unknown as string, 10) ||
                     parseInt(this.config.scanDurationMs as string, 10) ||
                     8000;
-                const targetHci = msg.hciDevice !== undefined && msg.hciDevice !== ''
-                    ? await resolveHciId(msg.hciDevice)
-                    : this.currentHci;
+                const targetHci =
+                    msg.hciDevice !== undefined && msg.hciDevice !== ''
+                        ? await resolveHciId(msg.hciDevice)
+                        : this.currentHci;
                 if (targetHci < 0) {
                     if (obj.callback) {
                         this.sendTo(
@@ -690,8 +885,7 @@ class WattcycleAdapter extends Adapter {
                     const raw: ScanResult[] = await this.ble.scan(ms);
                     const list = raw.filter(d => matchesPrefix(d.localName, prefixes));
                     this.log.info(
-                        `Scan finished: ${list.length} matching device(s)` +
-                            (prefixes.length ? ` (out of ${raw.length} total)` : ''),
+                        `Scan finished: ${list.length} matching device(s)${prefixes.length ? ` (out of ${raw.length} total)` : ''}`,
                     );
                     if (obj.callback) {
                         // Combine the result with current settings
