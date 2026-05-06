@@ -59,8 +59,9 @@ function parseAnalog(payload) {
         cellTemps.push((payload.readUInt16BE(o) - 2730) / 10.0);
         o += 2;
     }
-    let current;
-    [current, o] = parseCurrentSigned(payload, o);
+    const result = parseCurrentSigned(payload, o);
+    const current = result[0];
+    o = result[1];
     const voltage = payload.readUInt16BE(o) / 100.0;
     o += 2;
     const remCap = payload.readUInt16BE(o) / 10.0;
@@ -98,6 +99,7 @@ function parseProduct(payload) {
             serial: `unexpected length ${payload.length}`,
         };
     }
+    // eslint-disable-next-line no-control-regex
     const trim = (b) => b.toString('ascii').replace(/[\x00 ]+$/g, '');
     return {
         model_or_fw: trim(payload.subarray(0, 20)),
@@ -166,11 +168,12 @@ class WattCycleBle {
             return;
         }
         await new Promise((resolve, reject) => {
+            let onState = null;
             const timer = setTimeout(() => {
                 this.noble.removeListener('stateChange', onState);
                 reject(new Error(`Bluetooth adapter not powered on (state=${this.noble._state || this.noble.state})`));
             }, timeoutMs);
-            const onState = (s) => {
+            onState = (s) => {
                 if (s === 'poweredOn') {
                     clearTimeout(timer);
                     this.noble.removeListener('stateChange', onState);
@@ -227,11 +230,15 @@ class WattCycleBle {
         const target = targetMac.toLowerCase();
         return new Promise((resolve, reject) => {
             let done = false;
+            let onDiscover = null;
+            let timer = null;
             const cleanup = () => {
                 this.noble.removeListener('discover', onDiscover);
-                clearTimeout(timer);
+                if (timer) {
+                    clearTimeout(timer);
+                }
             };
-            const timer = setTimeout(async () => {
+            timer = setTimeout(async () => {
                 if (done) {
                     return;
                 }
@@ -245,7 +252,7 @@ class WattCycleBle {
                 }
                 reject(new Error(`Scan timeout: ${target} not found`));
             }, SCAN_TIMEOUT_MS);
-            const onDiscover = async (p) => {
+            onDiscover = async (p) => {
                 if (done) {
                     return;
                 }

@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "news": {
+      "0.2.1": {
+        "en": "Use MAC address as unique identifier bluetooth adapter",
+        "de": "MAC-Adresse als eindeutige Kennung bluetooth Adapter verwenden",
+        "ru": "Используйте MAC-адрес в качестве уникального идентификатора Bluetooth-адаптера",
+        "pt": "Usar o endereço MAC como adaptador único identificador bluetooth",
+        "nl": "Gebruik MAC-adres als unieke identificatie bluetooth-adapter",
+        "fr": "Utiliser l'adresse MAC comme identifiant unique adaptateur bluetooth",
+        "it": "Utilizzare l'indirizzo MAC come univoco identificatore adattatore bluetooth",
+        "es": "Utilice la dirección MAC como adaptador único de identificación bluetooth",
+        "pl": "Użyj adresu MAC jako unikalnego identyfikatora adaptera bluetooth",
+        "uk": "Використовуйте MAC адресу як унікальний адаптер bluetooth",
+        "zh-cn": "使用 MAC 地址作为唯一标识的蓝牙适配器"
+      },
       "0.1.0": {
         "en": "initial release",
         "de": "Erstveröffentlichung",

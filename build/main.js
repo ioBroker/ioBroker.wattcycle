@@ -18,9 +18,7 @@ async function readHciAdapters() {
     try {
         const infos = await (0, hci_info_1.readHciInfos)();
         if (infos.length) {
-            return infos
-                .map(i => ({ id: i.devId, address: i.address.toUpperCase() }))
-                .sort((a, b) => a.id - b.id);
+            return infos.map(i => ({ id: i.devId, address: i.address.toUpperCase() })).sort((a, b) => a.id - b.id);
         }
     }
     catch {
@@ -184,21 +182,117 @@ const STATUS_STATES = [
     { id: 'lastError', name: 'Last error', type: 'string', role: 'text', read: true, write: false },
 ];
 const TOTAL_STATES = [
-    { id: 'soc', name: 'Average state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
-    { id: 'soc_min', name: 'Lowest state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
-    { id: 'soc_max', name: 'Highest state of charge', type: 'number', role: 'value.battery', unit: '%', read: true, write: false },
-    { id: 'voltage', name: 'Average voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
-    { id: 'voltage_min', name: 'Lowest pack voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
-    { id: 'voltage_max', name: 'Highest pack voltage', type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false },
-    { id: 'current', name: 'Total current', type: 'number', role: 'value.current', unit: 'A', read: true, write: false },
+    {
+        id: 'soc',
+        name: 'Average state of charge',
+        type: 'number',
+        role: 'value.battery',
+        unit: '%',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'soc_min',
+        name: 'Lowest state of charge',
+        type: 'number',
+        role: 'value.battery',
+        unit: '%',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'soc_max',
+        name: 'Highest state of charge',
+        type: 'number',
+        role: 'value.battery',
+        unit: '%',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'voltage',
+        name: 'Average voltage',
+        type: 'number',
+        role: 'value.voltage',
+        unit: 'V',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'voltage_min',
+        name: 'Lowest pack voltage',
+        type: 'number',
+        role: 'value.voltage',
+        unit: 'V',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'voltage_max',
+        name: 'Highest pack voltage',
+        type: 'number',
+        role: 'value.voltage',
+        unit: 'V',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'current',
+        name: 'Total current',
+        type: 'number',
+        role: 'value.current',
+        unit: 'A',
+        read: true,
+        write: false,
+    },
     { id: 'power', name: 'Total power', type: 'number', role: 'value.power', unit: 'W', read: true, write: false },
-    { id: 'remaining_ah', name: 'Total remaining capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    {
+        id: 'remaining_ah',
+        name: 'Total remaining capacity',
+        type: 'number',
+        role: 'value',
+        unit: 'Ah',
+        read: true,
+        write: false,
+    },
     { id: 'total_ah', name: 'Total capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
-    { id: 'design_ah', name: 'Total design capacity', type: 'number', role: 'value', unit: 'Ah', read: true, write: false },
+    {
+        id: 'design_ah',
+        name: 'Total design capacity',
+        type: 'number',
+        role: 'value',
+        unit: 'Ah',
+        read: true,
+        write: false,
+    },
     { id: 'cycles_avg', name: 'Average cycle count', type: 'number', role: 'value', read: true, write: false },
-    { id: 'cell_spread_mv_max', name: 'Max cell spread', type: 'number', role: 'value', unit: 'mV', read: true, write: false },
-    { id: 'mos_temp_max', name: 'Max MOSFET temperature', type: 'number', role: 'value.temperature', unit: '°C', read: true, write: false },
-    { id: 'pcb_temp_max', name: 'Max PCB temperature', type: 'number', role: 'value.temperature', unit: '°C', read: true, write: false },
+    {
+        id: 'cell_spread_mv_max',
+        name: 'Max cell spread',
+        type: 'number',
+        role: 'value',
+        unit: 'mV',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'mos_temp_max',
+        name: 'Max MOSFET temperature',
+        type: 'number',
+        role: 'value.temperature',
+        unit: '°C',
+        read: true,
+        write: false,
+    },
+    {
+        id: 'pcb_temp_max',
+        name: 'Max PCB temperature',
+        type: 'number',
+        role: 'value.temperature',
+        unit: '°C',
+        read: true,
+        write: false,
+    },
     { id: 'count', name: 'Number of reachable batteries', type: 'number', role: 'value', read: true, write: false },
     { id: 'lastUpdate', name: 'Last aggregate update', type: 'number', role: 'date', read: true, write: false },
 ];
@@ -258,7 +352,7 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
             }
         };
         if (this.ble) {
-            this.ble.stop().finally(finish);
+            void this.ble.stop().finally(finish);
         }
         else {
             finish();
@@ -582,8 +676,7 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
                     this.log.info(`Scanning on hci${this.currentHci} for ${ms} ms${prefixes.length ? ` (filter: ${prefixes.join(', ')})` : ''}...`);
                     const raw = await this.ble.scan(ms);
                     const list = raw.filter(d => matchesPrefix(d.localName, prefixes));
-                    this.log.info(`Scan finished: ${list.length} matching device(s)` +
-                        (prefixes.length ? ` (out of ${raw.length} total)` : ''));
+                    this.log.info(`Scan finished: ${list.length} matching device(s)${prefixes.length ? ` (out of ${raw.length} total)` : ''}`);
                     if (obj.callback) {
                         // Combine the result with current settings
                         const batteries = this.config.batteries;

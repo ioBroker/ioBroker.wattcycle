@@ -16,7 +16,6 @@ const READ_LOCAL_NAME_OGF = 0x03;
 const READ_LOCAL_NAME_OCF = 0x0014;
 function loadHciSocket() {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const mod = require('@stoprocent/bluetooth-hci-socket');
         if (typeof mod.loadDriver !== 'function') {
             return null;
@@ -74,12 +73,15 @@ function probe(Ctor, devId, timeoutMs) {
         let address = null;
         let name = null;
         let done = false;
+        let timer = null;
         const finish = (result) => {
             if (done) {
                 return;
             }
             done = true;
-            clearTimeout(timer);
+            if (timer) {
+                clearTimeout(timer);
+            }
             try {
                 s.stop();
             }
@@ -88,7 +90,7 @@ function probe(Ctor, devId, timeoutMs) {
             }
             resolve(result);
         };
-        const timer = setTimeout(() => {
+        timer = setTimeout(() => {
             finish(address ? { devId, address, name: name ?? '' } : null);
         }, timeoutMs);
         s.on('error', () => finish(null));
