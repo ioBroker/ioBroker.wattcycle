@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const adapter_core_1 = require("@iobroker/adapter-core");
 const node_fs_1 = require("node:fs");
 const battery_1 = require("./lib/battery");
+const hci_info_1 = require("./lib/hci-info");
+const MAC_RE = /^[0-9a-f]{2}(?::[0-9a-f]{2}){5}$/i;
 function readSysFile(path) {
     try {
         return (0, node_fs_1.readFileSync)(path, 'utf8').trim();
@@ -11,8 +13,81 @@ function readSysFile(path) {
         return '';
     }
 }
-function listHciAdapters() {
+async function readHciAdapters() {
+    // Primary: HCI ioctl (works regardless of sysfs attribute availability).
+    try {
+        const infos = await (0, hci_info_1.readHciInfos)();
+        if (infos.length) {
+            return infos
+                .map(i => ({ id: i.devId, address: i.address.toUpperCase() }))
+                .sort((a, b) => a.id - b.id);
+        }
+    }
+    catch {
+        // fall through
+    }
+    // Fallback: sysfs. Older kernels and non-Linux platforms.
     const out = [];
+    const sysPath = '/sys/class/bluetooth';
+    try {
+        if ((0, node_fs_1.existsSync)(sysPath)) {
+            for (const name of (0, node_fs_1.readdirSync)(sysPath)) {
+                const m = /^hci(\d+)$/.exec(name);
+                if (!m) {
+                    continue;
+                }
+                out.push({
+                    id: parseInt(m[1], 10),
+                    address: readSysFile(`${sysPath}/${name}/address`).toUpperCase(),
+                });
+            }
+        }
+    }
+    catch {
+        // ignore
+    }
+    out.sort((a, b) => a.id - b.id);
+    return out;
+}
+// Resolve a configured value (MAC string or numeric index) to the current hciX id.
+// Returns -1 if a MAC was given but no controller currently exposes it.
+async function resolveHciId(value) {
+    if (typeof value === 'string' && MAC_RE.test(value.trim())) {
+        const wanted = value.trim().toUpperCase();
+        const adapters = await readHciAdapters();
+        const match = adapters.find(a => a.address === wanted);
+        return match ? match.id : -1;
+    }
+    const n = parseInt(value, 10);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+async function listHciAdapters() {
+    // Primary: query each controller via raw HCI commands (Read_BD_ADDR /
+    // Read_Local_Name). Recent Pi kernels no longer expose those attributes in
+    // sysfs, so this is the only reliable source for both name and MAC.
+    const out = [];
+    try {
+        const infos = await (0, hci_info_1.readHciInfos)();
+        for (const info of infos) {
+            const parts = [];
+            if (info.name) {
+                parts.push(info.name);
+            }
+            if (info.address) {
+                parts.push(info.address);
+            }
+            const hciName = `hci${info.devId}`;
+            const label = parts.length ? `${hciName} — ${parts.join(' · ')}` : hciName;
+            out.push({ value: info.address || info.devId, label });
+        }
+    }
+    catch {
+        // fall through to sysfs probe
+    }
+    if (out.length) {
+        return out;
+    }
+    // Fallback: sysfs (older kernels, non-Linux dev environments).
     const sysPath = '/sys/class/bluetooth';
     try {
         if ((0, node_fs_1.existsSync)(sysPath)) {
@@ -23,8 +98,7 @@ function listHciAdapters() {
                 }
                 const id = parseInt(m[1], 10);
                 const base = `${sysPath}/${name}`;
-                const address = readSysFile(`${base}/address`);
-                // USB dongles expose these via the parent device symlink.
+                const address = readSysFile(`${base}/address`).toUpperCase();
                 const product = readSysFile(`${base}/device/product`);
                 const manufacturer = readSysFile(`${base}/device/manufacturer`);
                 const friendly = product || manufacturer;
@@ -36,14 +110,13 @@ function listHciAdapters() {
                     parts.push(address);
                 }
                 const label = parts.length ? `${name} — ${parts.join(' · ')}` : name;
-                out.push({ value: id, label });
+                out.push({ value: address || id, label });
             }
         }
     }
     catch {
         // ignore
     }
-    out.sort((a, b) => a.value - b.value);
     return out;
 }
 const ANALOG_STATES = [
@@ -200,8 +273,14 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
             }
             return;
         }
-        const cfgHci = parseInt(this.config.hciDevice, 10);
-        const hci = Number.isFinite(cfgHci) && cfgHci >= 0 ? cfgHci : 0;
+        const hci = await resolveHciId(this.config.hciDevice);
+        if (hci < 0) {
+            const adapters = await readHciAdapters();
+            this.log.error(`Configured Bluetooth controller MAC ${String(this.config.hciDevice)} is not present. ` +
+                `Available: ${adapters.map(a => `hci${a.id}=${a.address || '?'}`).join(', ') || 'none'}`);
+            await this.setStateAsync('info.connection', false, true);
+            return;
+        }
         try {
             await this.setupBle(hci);
             await this.setStateAsync('info.connection', true, true);
@@ -476,8 +555,15 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
                 const ms = parseInt(msg.duration, 10) ||
                     parseInt(this.config.scanDurationMs, 10) ||
                     8000;
-                const reqHci = parseInt(msg.hciDevice, 10);
-                const targetHci = Number.isFinite(reqHci) && reqHci >= 0 ? reqHci : this.currentHci;
+                const targetHci = msg.hciDevice !== undefined && msg.hciDevice !== ''
+                    ? await resolveHciId(msg.hciDevice)
+                    : this.currentHci;
+                if (targetHci < 0) {
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, { error: `Controller ${String(msg.hciDevice)} not present on this host` }, obj.callback);
+                    }
+                    return;
+                }
                 const prefixes = parsePrefixes(typeof msg.namePrefixes === 'string' ? msg.namePrefixes : this.config.namePrefixes);
                 if (this.polling) {
                     if (obj.callback) {
@@ -531,7 +617,7 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
                 break;
             }
             case 'listHciAdapters': {
-                let adapters = listHciAdapters();
+                let adapters = await listHciAdapters();
                 if (!adapters.length) {
                     adapters = [
                         { value: 0, label: 'hci0' },
