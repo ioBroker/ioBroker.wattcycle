@@ -279,18 +279,25 @@ class WattCycleBle {
             this.busy = false;
         }
     }
-    async findPeripheral(targetMac) {
-        const target = targetMac.toLowerCase();
-        // Best-effort scan stop. Some noble/HCI states cause stopScanningAsync
-        // to never resolve, so we never await it — fire-and-forget with a
-        // sub-timeout so a hang here cannot wedge the polling loop.
+    /**
+     * Single scan that collects all peripherals matching the given MACs.
+     * Stops as soon as either every requested mac was seen, or the timeout
+     * elapses. Returns a map keyed by lowercase mac. Macs not seen during
+     * the scan window are simply absent from the map.
+     */
+    async findPeripherals(targetMacs, timeoutMs) {
+        const wanted = new Set(targetMacs.map(m => m.toLowerCase()));
+        const found = new Map();
+        if (!wanted.size) {
+            return found;
+        }
         const stopScanFireAndForget = () => {
             withTimeout(Promise.resolve(this.noble.stopScanningAsync()), STOP_SCAN_TIMEOUT_MS, 'stopScanningAsync timeout').catch(() => {
                 /* ignore */
             });
         };
         return new Promise((resolve, reject) => {
-            let done = false;
+            let settled = false;
             let onDiscover = null;
             let timer = null;
             const cleanup = () => {
@@ -309,58 +316,86 @@ class WattCycleBle {
                     timer = null;
                 }
             };
-            timer = setTimeout(() => {
-                if (done) {
+            const finish = (stopScan) => {
+                if (settled) {
                     return;
                 }
-                done = true;
+                settled = true;
                 cleanup();
-                // On the rejection path, deliberately do NOT stop scanning.
-                // On some HCI stacks calling stopScanningAsync after a long
-                // failed scan flips the controller to poweredOff, killing
-                // every subsequent poll. The scan will be stopped naturally
-                // by the next successful findPeripheral or by adapter unload.
-                reject(new Error(`Scan timeout: ${target} not found`));
-            }, SCAN_TIMEOUT_MS);
-            onDiscover = (p) => {
-                if (done) {
-                    return;
+                // Only call stopScanningAsync on the success path. On some HCI
+                // stacks stopping after a long failed scan flips the controller
+                // to poweredOff, killing every subsequent poll.
+                if (stopScan) {
+                    stopScanFireAndForget();
                 }
-                if ((p.address || '').toLowerCase() !== target) {
-                    return;
-                }
-                done = true;
-                cleanup();
-                stopScanFireAndForget();
-                resolve(p);
+                resolve(found);
             };
-            this.noble.on('discover', onDiscover);
-            this.noble.startScanningAsync([], false).catch((e) => {
-                if (done) {
+            const fail = (e) => {
+                if (settled) {
                     return;
                 }
-                done = true;
+                settled = true;
                 cleanup();
                 reject(e);
-            });
+            };
+            timer = setTimeout(() => finish(found.size > 0), timeoutMs);
+            onDiscover = (p) => {
+                if (settled) {
+                    return;
+                }
+                const addr = (p.address || '').toLowerCase();
+                if (!addr || !wanted.has(addr) || found.has(addr)) {
+                    return;
+                }
+                found.set(addr, p);
+                if (found.size >= wanted.size) {
+                    finish(true);
+                }
+            };
+            this.noble.on('discover', onDiscover);
+            this.noble.startScanningAsync([], false).catch((e) => fail(e));
         });
     }
-    async readBattery(mac) {
+    /**
+     * Read every battery sequentially using a single up-front scan. This
+     * minimises the number of LE-scans per polling round (1 instead of N),
+     * which is critical on HCI stacks where an unsuccessful scan can knock
+     * the controller into poweredOff. Offline batteries are simply absent
+     * from the result map; the caller decides how to record that.
+     */
+    async readBatteries(macs) {
         if (this.busy) {
             throw new Error('BLE adapter is busy');
         }
         this.busy = true;
+        const results = new Map();
         try {
-            return await withTimeout(this.readBatteryInner(mac), READ_BATTERY_BUDGET_MS, `readBattery budget exceeded for ${mac}`);
+            await this.waitPoweredOn();
+            this.log.debug(`Single-scan for ${macs.length} battery/batteries (max ${SCAN_TIMEOUT_MS} ms)...`);
+            const peripherals = await this.findPeripherals(macs, SCAN_TIMEOUT_MS);
+            this.log.debug(`Scan finished: ${peripherals.size}/${macs.length} battery/batteries seen`);
+            for (const mac of macs) {
+                const lowerMac = mac.toLowerCase();
+                const peripheral = peripherals.get(lowerMac);
+                if (!peripheral) {
+                    results.set(mac, new Error('Battery not seen during scan'));
+                    continue;
+                }
+                try {
+                    const data = await withTimeout(this.readPeripheral(peripheral, mac), READ_BATTERY_BUDGET_MS, `readBattery budget exceeded for ${mac}`);
+                    results.set(mac, data);
+                }
+                catch (e) {
+                    results.set(mac, e instanceof Error ? e : new Error(String(e)));
+                }
+            }
+            return results;
         }
         finally {
             this.busy = false;
         }
     }
-    async readBatteryInner(mac) {
-        await this.waitPoweredOn();
-        this.log.debug(`Searching for ${mac}...`);
-        const peripheral = await this.findPeripheral(mac);
+    async readPeripheral(peripheral, mac) {
         this.log.debug(`Connecting to ${mac}...`);
         await withTimeout(Promise.resolve(peripheral.connectAsync()), CONNECT_TIMEOUT_MS, `Connect timeout for ${mac}`);
         try {

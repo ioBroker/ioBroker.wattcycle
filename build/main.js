@@ -479,14 +479,52 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
                 }
                 return;
             }
+            // Single up-front scan, then sequential connect/read for every
+            // battery that was actually seen. This avoids one LE-scan per
+            // battery — a single failed scan is enough to flip some HCI
+            // controllers to poweredOff, so doing fewer scans means a far
+            // more stable polling loop.
+            const macs = batteries.map(b => b.mac);
+            let resultMap;
+            try {
+                resultMap = await this.ble.readBatteries(macs);
+            }
+            catch (e) {
+                this.log.error(`Polling round failed: ${e.message}`);
+                return;
+            }
             for (const bat of batteries) {
                 if (this.stopping) {
                     break;
                 }
-                const analog = await this.pollBattery(bat);
-                if (analog) {
-                    successful.push(analog);
+                const devId = this.getDeviceId(bat);
+                const prefix = `${devId}.`;
+                const r = resultMap.get(bat.mac);
+                if (r instanceof Error) {
+                    const msg = r.message || String(r);
+                    this.log.warn(`Poll ${bat.mac}: ${msg}`);
+                    await this.setStateAsync(`${prefix}reachable`, false, true);
+                    await this.setStateAsync(`${prefix}lastError`, msg, true);
+                    continue;
                 }
+                if (!r) {
+                    // Should not happen: readBatteries always returns one
+                    // entry per requested mac. Treat as not reachable.
+                    await this.setStateAsync(`${prefix}reachable`, false, true);
+                    await this.setStateAsync(`${prefix}lastError`, 'No result returned', true);
+                    continue;
+                }
+                if (r.analog) {
+                    await this.writeAnalog(prefix, r.analog);
+                    successful.push(r.analog);
+                }
+                if (r.product) {
+                    await this.writeProduct(prefix, r.product);
+                }
+                await this.setStateAsync(`${prefix}lastUpdate`, Date.now(), true);
+                await this.setStateAsync(`${prefix}reachable`, true, true);
+                await this.setStateAsync(`${prefix}lastError`, '', true);
+                this.log.debug(`Polled ${bat.mac}${r.analog ? ` SOC=${r.analog.soc}% V=${r.analog.voltage}V` : ''}`);
                 if (gapMs > 0 && !this.stopping) {
                     await new Promise(resolve => setTimeout(resolve, gapMs));
                 }
@@ -498,34 +536,6 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
             const elapsed = Date.now() - start;
             const next = Math.max(1000, pollMs - elapsed);
             this.schedulePoll(next);
-        }
-    }
-    async pollBattery(bat) {
-        if (!this.ble) {
-            return null;
-        }
-        const devId = this.getDeviceId(bat);
-        const prefix = `${devId}.`;
-        try {
-            const data = await this.ble.readBattery(bat.mac);
-            if (data.analog) {
-                await this.writeAnalog(prefix, data.analog);
-            }
-            if (data.product) {
-                await this.writeProduct(prefix, data.product);
-            }
-            await this.setStateAsync(`${prefix}lastUpdate`, Date.now(), true);
-            await this.setStateAsync(`${prefix}reachable`, true, true);
-            await this.setStateAsync(`${prefix}lastError`, '', true);
-            this.log.debug(`Polled ${bat.mac}${data.analog ? ` SOC=${data.analog.soc}% V=${data.analog.voltage}V` : ''}`);
-            return data.analog ?? null;
-        }
-        catch (e) {
-            const msg = e.message || String(e);
-            this.log.warn(`Poll ${bat.mac}: ${msg}`);
-            await this.setStateAsync(`${prefix}reachable`, false, true);
-            await this.setStateAsync(`${prefix}lastError`, msg, true);
-            return null;
         }
     }
     async writeAnalog(prefix, a) {

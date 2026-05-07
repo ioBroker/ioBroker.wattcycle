@@ -43,9 +43,22 @@ export declare class WattCycleBle {
     getPowerState(): string;
     isPoweredOn(): boolean;
     scan(timeoutMs?: number): Promise<ScanResult[]>;
-    private findPeripheral;
-    readBattery(mac: string): Promise<BatteryReadResult>;
-    private readBatteryInner;
+    /**
+     * Single scan that collects all peripherals matching the given MACs.
+     * Stops as soon as either every requested mac was seen, or the timeout
+     * elapses. Returns a map keyed by lowercase mac. Macs not seen during
+     * the scan window are simply absent from the map.
+     */
+    private findPeripherals;
+    /**
+     * Read every battery sequentially using a single up-front scan. This
+     * minimises the number of LE-scans per polling round (1 instead of N),
+     * which is critical on HCI stacks where an unsuccessful scan can knock
+     * the controller into poweredOff. Offline batteries are simply absent
+     * from the result map; the caller decides how to record that.
+     */
+    readBatteries(macs: string[]): Promise<Map<string, BatteryReadResult | Error>>;
+    private readPeripheral;
     stop(): Promise<void>;
 }
 export {};
