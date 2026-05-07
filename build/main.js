@@ -397,32 +397,56 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
         this.schedulePoll(0);
     }
     async setupBle(hciId, force = false) {
+        this.log.debug(`setupBle(hci${hciId}, force=${force}) start`);
         if (!force && this.noble && this.currentHci === hciId) {
+            this.log.debug('setupBle: already initialised, skip');
             return;
         }
         if (this.ble) {
+            this.log.debug('setupBle: stopping previous BLE instance...');
+            const prevBle = this.ble;
+            const stopPromise = Promise.resolve()
+                .then(() => prevBle.stop())
+                .catch((e) => {
+                this.log.debug(`setupBle: previous stop rejected: ${e.message}`);
+            });
+            await Promise.race([stopPromise, new Promise(resolve => setTimeout(resolve, 5000))]);
+            this.log.debug('setupBle: previous BLE stopped (or timed out)');
+        }
+        // Detach all listeners from the previous noble instance to avoid leaks.
+        if (this.noble) {
             try {
-                await this.ble.stop();
+                this.log.debug('setupBle: removing listeners from old noble');
+                this.noble.removeAllListeners?.();
             }
-            catch {
-                // ignore
+            catch (e) {
+                this.log.debug(`setupBle: removeAllListeners failed: ${e.message}`);
             }
         }
+        this.ble = null;
+        this.noble = null;
         process.env.NOBLE_HCI_DEVICE_ID = String(hciId);
         // The HCI binding reads NOBLE_HCI_DEVICE_ID only when first required.
         // Drop noble from the cache so a switch to a different adapter re-initialises.
+        let purged = 0;
         for (const key of Object.keys(require.cache)) {
             if (key.includes('@stoprocent') && key.includes('noble')) {
                 delete require.cache[key];
+                purged++;
             }
         }
+        this.log.debug(`setupBle: purged ${purged} noble cache entries`);
+        this.log.debug('setupBle: requiring @stoprocent/noble fresh');
         const nobleModule = require('@stoprocent/noble');
         // Prefer explicit option when supported by the library.
         try {
             this.noble = nobleModule.withBindings('hci', { deviceId: hciId });
+            this.log.debug('setupBle: created noble binding via withBindings("hci", { deviceId })');
         }
-        catch {
+        catch (e) {
+            this.log.debug(`setupBle: withBindings(deviceId) failed: ${e.message}`);
             this.noble = nobleModule.withBindings ? nobleModule.withBindings('hci') : nobleModule;
+            this.log.debug('setupBle: fallback noble binding created');
         }
         this.currentHci = hciId;
         this.ble = new battery_1.WattCycleBle(this.noble, {
@@ -431,6 +455,7 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
             error: m => this.log.error(m),
             debug: m => this.log.debug(m),
         });
+        this.log.debug(`setupBle: waiting for poweredOn (current state="${this.ble.getPowerState()}")`);
         await this.ble.waitPoweredOn(15000);
         this.log.info(`Bluetooth adapter hci${hciId} powered on`);
     }
@@ -463,12 +488,26 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
             // After a scan timeout the noble HCI binding can fall back to
             // poweredOff; without re-initialising, every subsequent poll fails.
             if (!this.ble.isPoweredOn()) {
-                this.log.warn(`Bluetooth state is "${this.ble.getPowerState()}", reinitialising hci${this.currentHci}...`);
+                const state = this.ble.getPowerState();
+                this.log.warn(`Bluetooth state is "${state}", reinitialising hci${this.currentHci}...`);
+                const reinitStart = Date.now();
                 try {
-                    await this.setupBle(this.currentHci, true);
+                    // Hard upper bound on the reinit. setupBle() has its own
+                    // step-level timeouts but the whole sequence must not be
+                    // allowed to lock up the polling loop.
+                    await Promise.race([
+                        this.setupBle(this.currentHci, true),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('setupBle overall timeout')), 30000)),
+                    ]);
+                    this.log.info(`BLE reinit succeeded after ${Date.now() - reinitStart} ms`);
                 }
                 catch (e) {
-                    this.log.error(`BLE reinit failed: ${e.message}`);
+                    this.log.error(`BLE reinit failed after ${Date.now() - reinitStart} ms: ${e.message}`);
+                    return;
+                }
+                if (!this.ble || !this.ble.isPoweredOn()) {
+                    this.log.warn(`Skipping poll round: BLE still not powered on (state=${this.ble?.getPowerState() ?? 'null'})`);
+                    return;
                 }
             }
             for (const bat of batteries) {
