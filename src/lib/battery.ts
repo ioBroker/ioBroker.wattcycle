@@ -245,24 +245,41 @@ export class WattCycleBle {
     }
 
     public async waitPoweredOn(timeoutMs = 10000): Promise<void> {
+        if (typeof this.noble?.on !== 'function') {
+            throw new Error('Bluetooth binding not initialised correctly');
+        }
         const state = this.noble._state || this.noble.state;
         if (state === 'poweredOn') {
             return;
         }
         await new Promise<void>((resolve, reject) => {
             let onState: ((s: string) => void) | null = null;
+            const safeRemove = (): void => {
+                try {
+                    if (typeof this.noble.removeListener === 'function' && onState) {
+                        this.noble.removeListener('stateChange', onState);
+                    }
+                } catch {
+                    // ignore
+                }
+            };
             const timer = setTimeout(() => {
-                this.noble.removeListener('stateChange', onState);
+                safeRemove();
                 reject(new Error(`Bluetooth adapter not powered on (state=${this.noble._state || this.noble.state})`));
             }, timeoutMs);
             onState = (s: string): void => {
                 if (s === 'poweredOn') {
                     clearTimeout(timer);
-                    this.noble.removeListener('stateChange', onState);
+                    safeRemove();
                     resolve();
                 }
             };
-            this.noble.on('stateChange', onState);
+            try {
+                this.noble.on('stateChange', onState);
+            } catch (e) {
+                clearTimeout(timer);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            }
         });
     }
 
@@ -308,7 +325,13 @@ export class WattCycleBle {
                 } catch {
                     // ignore
                 }
-                this.noble.removeListener('discover', onDiscover);
+                try {
+                    if (typeof this.noble.removeListener === 'function') {
+                        this.noble.removeListener('discover', onDiscover);
+                    }
+                } catch {
+                    // ignore — noble may be in a degraded state
+                }
             }
             return Array.from(found.values()).sort((a, b) => b.rssi - a.rssi);
         } finally {
@@ -318,9 +341,9 @@ export class WattCycleBle {
 
     private async findPeripheral(targetMac: string): Promise<any> {
         const target = targetMac.toLowerCase();
-        // Best-effort scan stop. Some noble/HCI states cause stopScanningAsync to
-        // never resolve, so we never await it on the rejection path — that hang
-        // would otherwise wedge the entire polling loop.
+        // Best-effort scan stop. Some noble/HCI states cause stopScanningAsync
+        // to never resolve, so we never await it — fire-and-forget with a
+        // sub-timeout so a hang here cannot wedge the polling loop.
         const stopScanFireAndForget = (): void => {
             withTimeout(
                 Promise.resolve(this.noble.stopScanningAsync()),
@@ -336,7 +359,13 @@ export class WattCycleBle {
             let timer: NodeJS.Timeout | null = null;
             const cleanup = (): void => {
                 if (onDiscover) {
-                    this.noble.removeListener('discover', onDiscover);
+                    try {
+                        if (typeof this.noble.removeListener === 'function') {
+                            this.noble.removeListener('discover', onDiscover);
+                        }
+                    } catch {
+                        // ignore — noble may be in a degraded state
+                    }
                 }
                 if (timer) {
                     clearTimeout(timer);
@@ -349,7 +378,11 @@ export class WattCycleBle {
                 }
                 done = true;
                 cleanup();
-                stopScanFireAndForget();
+                // On the rejection path, deliberately do NOT stop scanning.
+                // On some HCI stacks calling stopScanningAsync after a long
+                // failed scan flips the controller to poweredOff, killing
+                // every subsequent poll. The scan will be stopped naturally
+                // by the next successful findPeripheral or by adapter unload.
                 reject(new Error(`Scan timeout: ${target} not found`));
             }, SCAN_TIMEOUT_MS);
             onDiscover = (p: any): void => {
