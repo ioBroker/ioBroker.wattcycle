@@ -91,7 +91,7 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    Placeholder for the next version (at the beginning of the line):
    ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.2.2 (2026-05-07)
 * (@GermanBluefox) Managed timeouts and power off
 
 ### 0.2.1 (2026-05-06)

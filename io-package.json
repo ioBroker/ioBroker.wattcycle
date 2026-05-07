@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "news": {
+      "0.2.2": {
+        "en": "Managed timeouts and power off",
+        "de": "Managed Timeouts und power off",
+        "ru": "Управляемые тайм-ауты и выключение питания",
+        "pt": "Tempo- limite e desligamento gerenciados",
+        "nl": "Beheerde time-outs en uitschakelen",
+        "fr": "Managed timeouts et activation",
+        "it": "Timeout gestiti e spegnere",
+        "es": "Tiempos manejados y poder apagado",
+        "pl": "Zarządzanie przerwami czasowymi i wyłączeniem zasilania",
+        "uk": "Управління часами і відключенням живлення",
+        "zh-cn": "管理超时和停电"
+      },
       "0.2.1": {
         "en": "Use MAC address as unique identifier bluetooth adapter",
         "de": "MAC-Adresse als eindeutige Kennung bluetooth Adapter verwenden",
