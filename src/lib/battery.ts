@@ -16,6 +16,31 @@ const AUTH_KEY = Buffer.from('HiLink', 'utf8');
 
 const SCAN_TIMEOUT_MS = 15000;
 const FRAME_TIMEOUT_MS = 5000;
+const CONNECT_TIMEOUT_MS = 15000;
+const DISCOVER_SERVICES_TIMEOUT_MS = 10000;
+const SUBSCRIBE_TIMEOUT_MS = 5000;
+const WRITE_TIMEOUT_MS = 5000;
+const DISCONNECT_TIMEOUT_MS = 5000;
+const STOP_SCAN_TIMEOUT_MS = 3000;
+// Upper bound for an entire readBattery call. Belt-and-suspenders watchdog —
+// even if a noble call hangs forever, the polling loop will move on.
+const READ_BATTERY_BUDGET_MS = 60000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, msg: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const t = setTimeout(() => reject(new Error(msg)), ms);
+        p.then(
+            v => {
+                clearTimeout(t);
+                resolve(v);
+            },
+            e => {
+                clearTimeout(t);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            },
+        );
+    });
+}
 
 export interface BatteryAnalog {
     soc: number;
@@ -245,6 +270,14 @@ export class WattCycleBle {
         return this.busy;
     }
 
+    public getPowerState(): string {
+        return this.noble._state || this.noble.state || 'unknown';
+    }
+
+    public isPoweredOn(): boolean {
+        return this.getPowerState() === 'poweredOn';
+    }
+
     public async scan(timeoutMs = 8000): Promise<ScanResult[]> {
         if (this.busy) {
             throw new Error('BLE adapter is busy');
@@ -285,30 +318,41 @@ export class WattCycleBle {
 
     private async findPeripheral(targetMac: string): Promise<any> {
         const target = targetMac.toLowerCase();
+        // Best-effort scan stop. Some noble/HCI states cause stopScanningAsync to
+        // never resolve, so we never await it on the rejection path — that hang
+        // would otherwise wedge the entire polling loop.
+        const stopScanFireAndForget = (): void => {
+            withTimeout(
+                Promise.resolve(this.noble.stopScanningAsync()),
+                STOP_SCAN_TIMEOUT_MS,
+                'stopScanningAsync timeout',
+            ).catch(() => {
+                /* ignore */
+            });
+        };
         return new Promise((resolve, reject) => {
             let done = false;
-            let onDiscover: ((p: any) => Promise<void>) | null = null;
+            let onDiscover: ((p: any) => void) | null = null;
             let timer: NodeJS.Timeout | null = null;
             const cleanup = (): void => {
-                this.noble.removeListener('discover', onDiscover);
+                if (onDiscover) {
+                    this.noble.removeListener('discover', onDiscover);
+                }
                 if (timer) {
                     clearTimeout(timer);
+                    timer = null;
                 }
             };
-            timer = setTimeout(async () => {
+            timer = setTimeout(() => {
                 if (done) {
                     return;
                 }
                 done = true;
                 cleanup();
-                try {
-                    await this.noble.stopScanningAsync();
-                } catch {
-                    // ignore
-                }
+                stopScanFireAndForget();
                 reject(new Error(`Scan timeout: ${target} not found`));
             }, SCAN_TIMEOUT_MS);
-            onDiscover = async (p: any): Promise<void> => {
+            onDiscover = (p: any): void => {
                 if (done) {
                     return;
                 }
@@ -317,11 +361,7 @@ export class WattCycleBle {
                 }
                 done = true;
                 cleanup();
-                try {
-                    await this.noble.stopScanningAsync();
-                } catch {
-                    // ignore
-                }
+                stopScanFireAndForget();
                 resolve(p);
             };
             this.noble.on('discover', onDiscover);
@@ -342,62 +382,90 @@ export class WattCycleBle {
         }
         this.busy = true;
         try {
-            await this.waitPoweredOn();
-            this.log.debug(`Searching for ${mac}...`);
-            const peripheral = await this.findPeripheral(mac);
-            this.log.debug(`Connecting to ${mac}...`);
-            await peripheral.connectAsync();
-            try {
-                const { characteristics } = await peripheral.discoverAllServicesAndCharacteristicsAsync();
-                const findChar = (short: string): any => characteristics.find((c: any) => uuidMatches(c.uuid, short));
-                const writeChar = findChar(UUID_WRITE);
-                const notifyChar = findChar(UUID_NOTIFY);
-                const authChar = findChar(UUID_AUTH);
-                if (!writeChar || !notifyChar || !authChar) {
-                    throw new Error('Required characteristics (fff1/fff2/fffa) missing');
-                }
-
-                const asm = new FrameAssembler();
-                notifyChar.on('data', (data: Buffer) => asm.feed(data));
-                await notifyChar.subscribeAsync();
-
-                await authChar.writeAsync(AUTH_KEY, false);
-                await sleep(300);
-
-                const result: BatteryReadResult = {};
-                for (const [name, dp] of [
-                    ['product', DP_PRODUCT],
-                    ['analog', DP_ANALOG],
-                ] as [string, number][]) {
-                    const wait = asm.waitFor();
-                    const cmd = buildReadFrame(dp);
-                    await writeChar.writeAsync(cmd, true);
-                    const frame = await Promise.race([wait, sleep(FRAME_TIMEOUT_MS).then(() => null)]);
-                    if (!frame) {
-                        this.log.warn(`Timeout reading DP 0x${dp.toString(16)} from ${mac}`);
-                        continue;
-                    }
-                    const payload = parseFrame(frame);
-                    if (!payload) {
-                        this.log.warn(`Invalid frame from ${mac} for DP 0x${dp.toString(16)}`);
-                        continue;
-                    }
-                    if (name === 'product') {
-                        result.product = parseProduct(payload);
-                    } else {
-                        result.analog = parseAnalog(payload);
-                    }
-                }
-                return result;
-            } finally {
-                try {
-                    await peripheral.disconnectAsync();
-                } catch {
-                    // ignore
-                }
-            }
+            return await withTimeout(
+                this.readBatteryInner(mac),
+                READ_BATTERY_BUDGET_MS,
+                `readBattery budget exceeded for ${mac}`,
+            );
         } finally {
             this.busy = false;
+        }
+    }
+
+    private async readBatteryInner(mac: string): Promise<BatteryReadResult> {
+        await this.waitPoweredOn();
+        this.log.debug(`Searching for ${mac}...`);
+        const peripheral = await this.findPeripheral(mac);
+        this.log.debug(`Connecting to ${mac}...`);
+        await withTimeout(Promise.resolve(peripheral.connectAsync()), CONNECT_TIMEOUT_MS, `Connect timeout for ${mac}`);
+        try {
+            const { characteristics } = await withTimeout(
+                Promise.resolve(peripheral.discoverAllServicesAndCharacteristicsAsync()),
+                DISCOVER_SERVICES_TIMEOUT_MS,
+                `Service discovery timeout for ${mac}`,
+            );
+            const findChar = (short: string): any => characteristics.find((c: any) => uuidMatches(c.uuid, short));
+            const writeChar = findChar(UUID_WRITE);
+            const notifyChar = findChar(UUID_NOTIFY);
+            const authChar = findChar(UUID_AUTH);
+            if (!writeChar || !notifyChar || !authChar) {
+                throw new Error('Required characteristics (fff1/fff2/fffa) missing');
+            }
+
+            const asm = new FrameAssembler();
+            notifyChar.on('data', (data: Buffer) => asm.feed(data));
+            await withTimeout(
+                Promise.resolve(notifyChar.subscribeAsync()),
+                SUBSCRIBE_TIMEOUT_MS,
+                `Subscribe timeout for ${mac}`,
+            );
+
+            await withTimeout(
+                Promise.resolve(authChar.writeAsync(AUTH_KEY, false)),
+                WRITE_TIMEOUT_MS,
+                `Auth write timeout for ${mac}`,
+            );
+            await sleep(300);
+
+            const result: BatteryReadResult = {};
+            for (const [name, dp] of [
+                ['product', DP_PRODUCT],
+                ['analog', DP_ANALOG],
+            ] as [string, number][]) {
+                const wait = asm.waitFor();
+                const cmd = buildReadFrame(dp);
+                await withTimeout(
+                    Promise.resolve(writeChar.writeAsync(cmd, true)),
+                    WRITE_TIMEOUT_MS,
+                    `DP 0x${dp.toString(16)} write timeout for ${mac}`,
+                );
+                const frame = await Promise.race([wait, sleep(FRAME_TIMEOUT_MS).then(() => null)]);
+                if (!frame) {
+                    this.log.warn(`Timeout reading DP 0x${dp.toString(16)} from ${mac}`);
+                    continue;
+                }
+                const payload = parseFrame(frame);
+                if (!payload) {
+                    this.log.warn(`Invalid frame from ${mac} for DP 0x${dp.toString(16)}`);
+                    continue;
+                }
+                if (name === 'product') {
+                    result.product = parseProduct(payload);
+                } else {
+                    result.analog = parseAnalog(payload);
+                }
+            }
+            return result;
+        } finally {
+            try {
+                await withTimeout(
+                    Promise.resolve(peripheral.disconnectAsync()),
+                    DISCONNECT_TIMEOUT_MS,
+                    `Disconnect timeout for ${mac}`,
+                );
+            } catch {
+                // ignore
+            }
         }
     }
 

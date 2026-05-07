@@ -40,9 +40,12 @@ export declare class WattCycleBle {
     constructor(noble: any, log: MinimalLogger);
     waitPoweredOn(timeoutMs?: number): Promise<void>;
     isBusy(): boolean;
+    getPowerState(): string;
+    isPoweredOn(): boolean;
     scan(timeoutMs?: number): Promise<ScanResult[]>;
     private findPeripheral;
     readBattery(mac: string): Promise<BatteryReadResult>;
+    private readBatteryInner;
     stop(): Promise<void>;
 }
 export {};

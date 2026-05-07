@@ -396,8 +396,8 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
         this.log.info(`Starting polling for ${enabled.length} battery/batteries every ${pollMs} ms`);
         this.schedulePoll(0);
     }
-    async setupBle(hciId) {
-        if (this.noble && this.currentHci === hciId) {
+    async setupBle(hciId, force = false) {
+        if (!force && this.noble && this.currentHci === hciId) {
             return;
         }
         if (this.ble) {
@@ -459,6 +459,18 @@ class WattcycleAdapter extends adapter_core_1.Adapter {
         const batteries = (Array.isArray(this.config.batteries) ? this.config.batteries : []).filter(b => b && b.mac && b.enabled !== false);
         const successful = [];
         try {
+            // Recover from a stuck/poweredOff HCI before starting the round.
+            // After a scan timeout the noble HCI binding can fall back to
+            // poweredOff; without re-initialising, every subsequent poll fails.
+            if (!this.ble.isPoweredOn()) {
+                this.log.warn(`Bluetooth state is "${this.ble.getPowerState()}", reinitialising hci${this.currentHci}...`);
+                try {
+                    await this.setupBle(this.currentHci, true);
+                }
+                catch (e) {
+                    this.log.error(`BLE reinit failed: ${e.message}`);
+                }
+            }
             for (const bat of batteries) {
                 if (this.stopping) {
                     break;
