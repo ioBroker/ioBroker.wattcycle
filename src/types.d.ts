@@ -2,6 +2,8 @@ export interface BatteryEntry {
     mac: string;
     name: string;
     enabled?: boolean;
+    /** Whether this battery participates in aggregated calculations (total/avg/min/max). Defaults to true. */
+    includeInTotals?: boolean;
 }
 
 export interface WattCycleAdapterConfig {

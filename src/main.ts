@@ -385,6 +385,11 @@ class WattcycleAdapter extends Adapter {
     private pollTimer: NodeJS.Timeout | null = null;
     private polling = false;
     private stopping = false;
+    // Last good analog read per battery (key = lowercased mac). Used so that
+    // aggregate totals can include batteries that were unreachable in the
+    // current poll cycle — their previously known values are kept until they
+    // are next read successfully.
+    private lastAnalog: Map<string, BatteryAnalog> = new Map();
 
     public constructor(options: Partial<AdapterOptions> = {}) {
         super({
@@ -452,6 +457,7 @@ class WattcycleAdapter extends Adapter {
         const enabled = batteries.filter(b => b && b.mac && b.enabled !== false);
 
         await this.syncBatteryObjects(enabled);
+        await this.restoreAnalogCache(enabled);
 
         if (!enabled.length) {
             this.log.info('No batteries configured. Use the admin UI to scan and add batteries.');
@@ -532,7 +538,6 @@ class WattcycleAdapter extends Adapter {
         const batteries = (Array.isArray(this.config.batteries) ? this.config.batteries : []).filter(
             b => b && b.mac && b.enabled !== false,
         );
-        const successful: BatteryAnalog[] = [];
         try {
             // Recover from a stuck/poweredOff HCI controller. The @stoprocent/noble
             // HCI binding holds native socket state that cannot be reset cleanly
@@ -593,7 +598,7 @@ class WattcycleAdapter extends Adapter {
                 }
                 if (r.analog) {
                     await this.writeAnalog(prefix, r.analog);
-                    successful.push(r.analog);
+                    this.lastAnalog.set(bat.mac.toLowerCase(), r.analog);
                 }
                 if (r.product) {
                     await this.writeProduct(prefix, r.product);
@@ -606,7 +611,7 @@ class WattcycleAdapter extends Adapter {
                     await new Promise<void>(resolve => setTimeout(resolve, gapMs));
                 }
             }
-            await this.writeTotal(successful);
+            await this.writeTotal(batteries);
         } finally {
             this.polling = false;
             const elapsed = Date.now() - start;
@@ -637,8 +642,22 @@ class WattcycleAdapter extends Adapter {
         await this.setStateAsync(`${prefix}product.serial`, p.serial, true);
     }
 
-    private async writeTotal(reads: BatteryAnalog[]): Promise<void> {
+    private async writeTotal(batteries: BatteryEntry[]): Promise<void> {
         const r = (n: number, d: number): number => Number(n.toFixed(d));
+        // Aggregate only over batteries flagged to participate in totals.
+        // For each one, prefer the freshest reading; if it was unreachable
+        // in this cycle, fall back to the last good reading we have cached.
+        // Batteries that have never been read are simply skipped.
+        const reads: BatteryAnalog[] = [];
+        for (const bat of batteries) {
+            if (bat.includeInTotals === false) {
+                continue;
+            }
+            const cached = this.lastAnalog.get(bat.mac.toLowerCase());
+            if (cached) {
+                reads.push(cached);
+            }
+        }
         const n = reads.length;
         await this.setStateAsync('total.count', n, true);
         await this.setStateAsync('total.lastUpdate', Date.now(), true);
@@ -770,6 +789,58 @@ class WattcycleAdapter extends Adapter {
     private getDeviceId(bat: BatteryEntry): string {
         const named = bat.name ? sanitizeId(bat.name) : '';
         return `batteries.${named || `b_${macToId(bat.mac)}`}`;
+    }
+
+    // Repopulate the in-memory analog cache from previously persisted states
+    // so that aggregate totals include known-but-currently-unreachable
+    // batteries from the very first poll after an adapter restart.
+    private async restoreAnalogCache(batteries: BatteryEntry[]): Promise<void> {
+        for (const bat of batteries) {
+            const prefix = `${this.getDeviceId(bat)}.`;
+            try {
+                const readNum = async (id: string): Promise<number | null> => {
+                    const s = await this.getStateAsync(`${prefix}${id}`);
+                    const v = s?.val;
+                    return typeof v === 'number' && Number.isFinite(v) ? v : null;
+                };
+                const readJson = async (id: string): Promise<number[]> => {
+                    const s = await this.getStateAsync(`${prefix}${id}`);
+                    if (typeof s?.val !== 'string' || !s.val) {
+                        return [];
+                    }
+                    try {
+                        const parsed = JSON.parse(s.val);
+                        return Array.isArray(parsed) ? parsed.filter(v => typeof v === 'number') : [];
+                    } catch {
+                        return [];
+                    }
+                };
+                const soc = await readNum('soc');
+                const voltage = await readNum('voltage');
+                if (soc === null || voltage === null) {
+                    continue;
+                }
+                const analog: BatteryAnalog = {
+                    soc,
+                    voltage,
+                    current: (await readNum('current')) ?? 0,
+                    power: (await readNum('power')) ?? 0,
+                    remaining_ah: (await readNum('remaining_ah')) ?? 0,
+                    total_ah: (await readNum('total_ah')) ?? 0,
+                    design_ah: (await readNum('design_ah')) ?? 0,
+                    cycles: (await readNum('cycles')) ?? 0,
+                    cell_spread_mv: (await readNum('cell_spread_mv')) ?? 0,
+                    mos_temp: (await readNum('mos_temp')) ?? 0,
+                    pcb_temp: (await readNum('pcb_temp')) ?? 0,
+                    cells_v: await readJson('cells_v'),
+                    cell_temps: await readJson('cell_temps'),
+                };
+                this.lastAnalog.set(bat.mac.toLowerCase(), analog);
+            } catch (e) {
+                this.log.debug(`restoreAnalogCache ${bat.mac}: ${(e as Error).message}`);
+            }
+        }
+        this.log.debug(`Restored analog cache for ${this.lastAnalog.size}/${batteries.length} battery/batteries`);
     }
 
     private async syncBatteryObjects(batteries: BatteryEntry[]): Promise<void> {
@@ -927,7 +998,12 @@ class WattcycleAdapter extends Adapter {
                         for (const item of list) {
                             this.log.debug(`  ${item.address} — ${item.localName || '<no name>'} (${item.rssi} dBm)`);
                             if (!batteries.find(it => it.mac === item.address)) {
-                                batteries.push({ name: item.localName, mac: item.address, enabled: true });
+                                batteries.push({
+                                    name: item.localName,
+                                    mac: item.address,
+                                    enabled: true,
+                                    includeInTotals: true,
+                                });
                             }
                         }
 

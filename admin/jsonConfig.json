@@ -112,6 +112,13 @@
                             "width": 80
                         },
                         {
+                            "title": "Include in totals",
+                            "attr": "includeInTotals",
+                            "type": "checkbox",
+                            "default": true,
+                            "width": 120
+                        },
+                        {
                             "title": "Name",
                             "attr": "name",
                             "type": "text",
