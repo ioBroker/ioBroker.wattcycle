@@ -1,0 +1,10 @@
+{
+    // Type-checking configuration for the test files. The build
+    // (tsconfig.build.json) does not include the tests.
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "types": ["node", "mocha", "@iobroker/types"]
+    },
+    "include": ["./**/*.ts"]
+}

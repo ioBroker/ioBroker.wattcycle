@@ -1,0 +1,5 @@
+{
+    "require": ["@alcalzone/esbuild-register", "./test/mocha.setup.js"],
+    "extension": ["ts"],
+    "watch-files": ["src/**/*.ts", "test/**/*.ts"]
+}

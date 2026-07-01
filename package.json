@@ -1,70 +1,72 @@
 {
-  "name": "iobroker.wattcycle",
-  "version": "0.2.2",
-  "description": "Reads WattCycle / XDZN BLE batteries (TDT protocol) into ioBroker",
-  "author": {
-    "name": "bluefox",
-    "email": "dogafox@gmail.com"
-  },
-  "homepage": "https://github.com/ioBroker/ioBroker.wattcycle",
-  "license": "MIT",
-  "keywords": [
-    "ioBroker",
-    "wattcycle",
-    "xdzn",
-    "battery",
-    "lifepo4",
-    "ble",
-    "bluetooth",
-    "tdt"
-  ],
-  "engines": {
-    "node": ">=20"
-  },
-  "os": [
-    "linux",
-    "darwin"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ioBroker/ioBroker.wattcycle"
-  },
-  "dependencies": {
-    "@iobroker/adapter-core": "^3.4.1",
-    "@stoprocent/noble": "^2.4.1"
-  },
-  "devDependencies": {
-    "@alcalzone/release-script": "^5.2.1",
-    "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
-    "@alcalzone/release-script-plugin-license": "^5.2.0",
-    "@iobroker/eslint-config": "^2.3.4",
-    "@iobroker/legacy-testing": "^2.0.2",
-    "@iobroker/testing": "^5.2.2",
-    "@tsconfig/node20": "^20.1.9",
-    "@types/node": "^25.9.2",
-    "typescript": "~5.9.3"
-  },
-  "main": "build/main.js",
-  "files": [
-    "admin/",
-    "build/",
-    "io-package.json",
-    "LICENSE"
-  ],
-  "scripts": {
-    "test": "mocha --exit",
-    "lint": "eslint -c eslint.config.mjs",
-    "build": "tsc -p tsconfig.build.json",
-    "update-packages": "npx -y npm-check-updates --upgrade",
-    "release": "release-script",
-    "test:package": "mocha test/package.test.js --exit",
-    "test:integration": "mocha test/testAdapter.test.js --exit",
-    "release-patch": "release-script patch --yes",
-    "release-minor": "release-script minor --yes",
-    "release-major": "release-script major --yes"
-  },
-  "bugs": {
-    "url": "https://github.com/ioBroker/ioBroker.wattcycle/issues"
-  },
-  "readmeFilename": "README.md"
+    "name": "iobroker.wattcycle",
+    "version": "0.2.2",
+    "description": "Reads WattCycle / XDZN BLE batteries (TDT protocol) into ioBroker",
+    "author": {
+        "name": "bluefox",
+        "email": "dogafox@gmail.com"
+    },
+    "homepage": "https://github.com/ioBroker/ioBroker.wattcycle",
+    "license": "MIT",
+    "keywords": [
+        "ioBroker",
+        "wattcycle",
+        "xdzn",
+        "battery",
+        "lifepo4",
+        "ble",
+        "bluetooth",
+        "tdt"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "os1": [
+        "linux",
+        "darwin"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ioBroker/ioBroker.wattcycle"
+    },
+    "dependencies": {
+        "@iobroker/adapter-core": "^3.4.1",
+        "@stoprocent/noble": "^2.5.5"
+    },
+    "devDependencies": {
+        "@alcalzone/esbuild-register": "^2.5.1-1",
+        "@alcalzone/release-script": "^5.2.1",
+        "@alcalzone/release-script-plugin-iobroker": "^5.2.0",
+        "@alcalzone/release-script-plugin-license": "^5.2.0",
+        "@iobroker/eslint-config": "^2.3.4",
+        "@iobroker/testing": "^5.2.2",
+        "@tsconfig/node22": "^22.0.5",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^22.20.0",
+        "mocha": "^11.7.5",
+        "typescript": "~6.0.3"
+    },
+    "main": "build/main.js",
+    "files": [
+        "admin/",
+        "build/",
+        "io-package.json",
+        "LICENSE"
+    ],
+    "scripts": {
+        "test": "mocha --exit",
+        "lint": "eslint -c eslint.config.mjs",
+        "build": "tsc -p tsconfig.build.json",
+        "update-packages": "npx -y npm-check-updates --upgrade",
+        "release": "release-script",
+        "test:package": "mocha test/package.test.ts --exit",
+        "test:integration": "mocha test/integration.test.ts --exit",
+        "release-patch": "release-script patch --yes",
+        "release-minor": "release-script minor --yes",
+        "release-major": "release-script major --yes"
+    },
+    "bugs": {
+        "url": "https://github.com/ioBroker/ioBroker.wattcycle/issues"
+    },
+    "readmeFilename": "README.md"
 }
