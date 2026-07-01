@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "0.2.2",
+    "version": "1.0.0",
     "news": {
+      "1.0.0": {
+        "en": "Improved total calculations\nUpdated packages",
+        "de": "Verbesserte Gesamtberechnungen\nAktualisierte Pakete",
+        "ru": "Улучшены суммарные расчеты\nОбновлены пакеты",
+        "pt": "Cálculos totais aprimorados\nPacotes atualizados",
+        "nl": "Verbeterde totaalberekeningen\nBijgewerkte pakketten",
+        "fr": "Calculs totaux améliorés\nPaquets mis à jour",
+        "it": "Calcoli totali migliorati\nPacchetti aggiornati",
+        "es": "Cálculos totales mejorados\nPaquetes actualizados",
+        "pl": "Ulepszone obliczenia całkowite\nZaktualizowane pakiety",
+        "uk": "Покращені розрахунки загальної суми\nОновлені пакети",
+        "zh-cn": "改进的总计算\n更新包"
+      },
       "0.2.2": {
         "en": "Managed timeouts and power off",
         "de": "Managed Timeouts und power off",
