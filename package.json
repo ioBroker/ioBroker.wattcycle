@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.1",
-    "@stoprocent/noble": "^2.5.5"
+    "@stoprocent/noble": "^2.7.1"
   },
   "devDependencies": {
     "@alcalzone/esbuild-register": "^2.5.1-1",
