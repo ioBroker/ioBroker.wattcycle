@@ -30,7 +30,7 @@
     "url": "https://github.com/ioBroker/ioBroker.wattcycle"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.4.1",
+    "@iobroker/adapter-core": "^3.4.3",
     "@stoprocent/noble": "^2.5.5"
   },
   "devDependencies": {
