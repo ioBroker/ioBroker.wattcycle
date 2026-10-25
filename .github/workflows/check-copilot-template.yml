@@ -76,29 +76,53 @@ jobs:
           
       - name: Check for existing issues
         id: issue-check
+        if: steps.version-check.outputs.setup_needed == 'true' || steps.version-check.outputs.update_needed == 'true'
         uses: actions/github-script@v9
         with:
           script: |
+            // List open issues created by this workflow
             const { data: issues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
-              labels: 'copilot-setup,automation'
+              creator: 'github-actions[bot]',
+              per_page: 100
             });
-            
-            const setupIssues = issues.filter(issue => 
-              issue.title.includes('Setup ioBroker') || 
-              issue.title.includes('Update ioBroker') ||
-              issue.title.includes('Copilot')
-            );
-            
-            core.setOutput('has_existing_issue', setupIssues.length > 0);
-            core.setOutput('existing_count', setupIssues.length);
-            
-            if (setupIssues.length > 0) {
-              console.log(`Found ${setupIssues.length} existing copilot setup/update issue(s)`);
+
+            const copilotIssues = issues.filter(issue => {
+              const title = issue.title.toLowerCase();
+              return title.includes('copilot') && (
+                title.includes('setup') ||
+                title.includes('update') ||
+                title.includes('instructions') ||
+                title.includes('template')
+              );
+            });
+
+            // Close outdated issues, a new one with current versions is created afterwards
+            for (const issue of copilotIssues) {
+              console.log(`Closing outdated issue #${issue.number}: ${issue.title}`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: '🔄 This issue is superseded by a new automated template check. Closing in favor of the updated issue.'
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
             }
-            
+
+            core.setOutput('has_existing_issue', false);
+            core.setOutput('existing_count', copilotIssues.length);
+
+            if (copilotIssues.length > 0) {
+              console.log(`Closed ${copilotIssues.length} existing copilot setup/update issue(s)`);
+            }
+
       - name: Create initial setup issue
         if: steps.version-check.outputs.setup_needed == 'true' && steps.issue-check.outputs.has_existing_issue == 'false'
         uses: actions/github-script@v9
