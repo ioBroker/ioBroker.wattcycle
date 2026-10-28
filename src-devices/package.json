@@ -9,25 +9,26 @@
         "build": "vite build",
         "typecheck": "tsc --noEmit"
     },
-    "dependencies": {},
+    "dependencies": {
+        "iobroker.wattcycle": "file:.."
+    },
     "devDependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@iobroker/dm-utils": "^3.2.1",
         "@iobroker/dm-widgets": "^2.0.1",
-        "@iobroker/gui-components": "^10.3.10",
-        "@iobroker/type-detector": "^6.0.2",
+        "@iobroker/gui-components": "^10.3.14",
+        "@iobroker/type-detector": "^6.2.0",
         "@iobroker/types": "^7.2.5",
-        "@module-federation/vite": "^1.22.1",
+        "@module-federation/vite": "^1.23.6",
         "@mui/icons-material": "^9.5.0",
         "@mui/material": "^9.5.0",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
-        "@vitejs/plugin-react": "^6.1.1",
-        "react": "^19.3.0",
-        "react-dom": "^19.3.0",
-        "typescript": "~6.0.3",
-        "vite": "^8.3.0",
+        "@vitejs/plugin-react": "^6.1.2",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "vite": "^8.3.5",
         "vite-plugin-commonjs": "^0.10.4"
     }
 }

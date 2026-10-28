@@ -82,12 +82,13 @@ export default class WattCycleBattery extends (window.visRxWidget as typeof VisR
         return {
             id: 'tplWattCycleBattery',
             visSet: 'wattcycle',
-            visSetLabel: 'wattcycle_set_label',
+            // vis-2 always puts the prefix in front of the set/widget labels and the help, so no prefix here
+            visSetLabel: 'set_label',
             visSetColor: '#4fc3a1',
             visSetIcon: 'widgets/wattcycle/img/wattcycle.png',
             visName: 'WattCycleBattery',
-            visWidgetLabel: 'wattcycle_widget_label',
-            visHelp: 'wattcycle_widget_help',
+            visWidgetLabel: 'widget_label',
+            visHelp: 'widget_help',
             visAttrs: [
                 {
                     name: 'common',
