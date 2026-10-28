@@ -1,6 +1,6 @@
 {
   "name": "iobroker.wattcycle",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Reads WattCycle / XDZN BLE batteries (TDT protocol) into ioBroker",
   "author": {
     "name": "bluefox",

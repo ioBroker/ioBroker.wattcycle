@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "news": {
+      "2.0.2": {
+        "en": "Fixed the missing translations of the widget set, the widget name and the help in vis-2\nReplaced the wrong telegram context in the Copilot instructions and stopped the template check from creating duplicate issues (#70)\nUpdated packages",
+        "de": "Fehlende Übersetzungen von Widget-Set, Widget-Name und Hilfe in Vis-2 behoben\nHat den falschen Telegrammkontext in den Copilot-Anweisungen ersetzt und die Vorlagenprüfung verhindert (#70)\nNeue Pakete",
+        "ru": "Исправлены недостающие переводы набора виджетов, имени виджета и справки в vis-2\nЗаменен неправильный контекст Telegram в инструкциях Copilot и предотвращен дублирование ошибок при проверке шаблона (#70)\nОбновленные пакеты",
+        "pt": "Corrigido a falta de traduções do widget, o nome do widget e a ajuda no vis-2\nSubstituiu o contexto errado do telegrama nas instruções do Copilot e impediu que a verificação do modelo duplicasse (#70)\nPacotes novos",
+        "nl": "De ontbrekende vertalingen van de widgetset, de widgetnaam en de help in vis-2 opgelost\nDe verkeerde telegramcontext in de Copilot-instructies is vervangen en ervoor gezorgd dat de sjablooncontrole geen dubbele problemen veroorzaakte (#70)\nBijgewerkte pakketten",
+        "fr": "Correction des traductions manquantes du jeu de widgets, du nom du widget et de l'aide dans Vis-2\nA remplacé le mauvais contexte du télégramme dans les instructions de Copilot et a empêché la vérification des modèles (#70)\nPackages mis à jour",
+        "it": "Risolte le traduzioni mancanti del set di widget, del nome e dell'aiuto in vis-2\nHa sostituito il contesto Telegram errato nelle istruzioni di Copilot e ha impedito che il template creasse problemi (#70)\nPacchi nuovi",
+        "es": "Se corrigieron las traducciones que faltaban en la serie de widgets, su nombre y la ayuda en vis-2\nSustituyó un contexto de telegrama incorrecto en las instrucciones del copiloto e impidió que la comprobación de plantillas creara números duplicados (#70)\nPaquetes nuevos",
+        "pl": "Naprawiono brakujące tłumaczenia zestawu widżetów, nazwy widżetu i pomocy w vis-2\nZastąpił niewłaściwy kontekst telegramu w instrukcjach Copilot i powstrzymał sprawdzanie szablonu przed tworzeniem duplikatów problemów (#70)\nZaktualizowane pakiety",
+        "uk": "Виправлено відсутні переклади набору віджетів, ім'я віджета та довідка у vis-2\nЗамінив неправильний контекст телеграми в інструкціях Copilot та зупинив перевірку шаблонів від створення дублікатів проблем (#70)\nОновлені пакети",
+        "zh-cn": "修复了 vis-2 中控件集、控件名称和帮助文件缺少翻译的问题\n替换了 Copilot 指令中错误的电报上下文并阻止了模板检查产生重复问题 (#70)\n更新的软件包"
+      },
       "2.0.1": {
         "en": "Restored the supported platforms (Linux and macOS) in package.json\nAdded dependabot updates for the GUI parts",
         "de": "Unterstützte Systeme (Linux und macOS) in package.json wiederhergestellt\nDependabot Updates für die GUI hinzugefügt",
