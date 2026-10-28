@@ -114,7 +114,9 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-* (GermanBluefox) Replaced the wrong telegram context in the Copilot instructions and stopped the template check from creating duplicate issues (#70)
+* (@GermanBluefox) Fixed the missing translations of the widget set, the widget name and the help in vis-2
+* (@GermanBluefox) Replaced the wrong telegram context in the Copilot instructions and stopped the template check from creating duplicate issues (#70)
+* (@GermanBluefox) Updated packages
 
 ### 2.0.1 (2026-10-14)
 * (@GermanBluefox) Restored the supported platforms (Linux and macOS) in package.json
