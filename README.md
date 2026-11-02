@@ -114,6 +114,9 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+* (@GermanBluefox) Restored the restriction of the adapter to Linux and macOS
+
+### 2.0.3 (2026-11-02)
 * (@GermanBluefox) Updated packages
 * (@GermanBluefox) Ignore in totals batteries that have not been read for more than an hour
 
