@@ -113,7 +113,7 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    Placeholder for the next version (at the beginning of the line):
    ### **WORK IN PROGRESS**
 -->
-### 2.0.3 (2026-11-02)
+### **WORK IN PROGRESS**
 * (@GermanBluefox) Updated packages
 * (@GermanBluefox) Ignore in totals batteries that have not been read for more than an hour
 
