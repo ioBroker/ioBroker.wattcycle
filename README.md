@@ -113,7 +113,7 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    Placeholder for the next version (at the beginning of the line):
    ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 2.0.3 (2026-11-02)
 * (@GermanBluefox) Updated packages
 * (@GermanBluefox) Ignore in totals batteries that have not been read for more than an hour
 
@@ -138,9 +138,6 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
 
 ### 0.2.2 (2026-05-07)
 * (@GermanBluefox) Managed timeouts and power off
-
-### 0.2.1 (2026-05-06)
-* (@GermanBluefox) Use MAC address as a unique identifier bluetooth adapter
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

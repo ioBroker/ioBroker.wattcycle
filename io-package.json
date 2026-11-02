@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "news": {
+      "2.0.3": {
+        "en": "Updated packages\nIgnore in totals batteries that have not been read for more than an hour",
+        "de": "Neue Pakete\nIgnoriere Akkus, die länger als eine Stunde nicht gelesen wurden",
+        "ru": "Обновленные пакеты\nИгнорируйте в общем количестве батареи, которые не считывались более часа",
+        "pt": "Pacotes novos\nIgnore no total as baterias que não foram lidas por mais de uma hora",
+        "nl": "Bijgewerkte pakketten\nNegeer in totaal batterijen die al meer dan een uur niet zijn gelezen",
+        "fr": "Packages mis à jour\nIgnorez au total les piles qui ne sont pas lues depuis plus d'une heure",
+        "it": "Pacchi nuovi\nIgnori in totale le batterie che non sono lette da più di un'ora",
+        "es": "Paquetes nuevos\nIgnorar en total las pilas que no se han leído durante más de una hora",
+        "pl": "Zaktualizowane pakiety\nIgnoruj w sumie baterie, które nie były odczytywane dłużej niż godzinę",
+        "uk": "Оновлені пакети\nІгноруйте в підсумку батареї, які не читалися більше години",
+        "zh-cn": "更新的软件包\n忽略已超过一小时未读取的电池总数"
+      },
       "2.0.2": {
         "en": "Fixed the missing translations of the widget set, the widget name and the help in vis-2\nReplaced the wrong telegram context in the Copilot instructions and stopped the template check from creating duplicate issues (#70)\nUpdated packages",
         "de": "Fehlende Übersetzungen von Widget-Set, Widget-Name und Hilfe in Vis-2 behoben\nHat den falschen Telegrammkontext in den Copilot-Anweisungen ersetzt und die Vorlagenprüfung verhindert (#70)\nNeue Pakete",
