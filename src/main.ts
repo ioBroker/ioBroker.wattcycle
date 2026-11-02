@@ -391,6 +391,7 @@ class WattcycleAdapter extends Adapter {
     // current poll cycle — their previously known values are kept until they
     // are next read successfully.
     private lastAnalog: Map<string, BatteryAnalog> = new Map();
+    private lastUpdate: Map<string, number> = new Map();
     private deviceManagement: WattCycleDeviceManagement | null = null;
 
     public constructor(options: Partial<AdapterOptions> = {}) {
@@ -606,6 +607,7 @@ class WattcycleAdapter extends Adapter {
                 if (r.product) {
                     await this.writeProduct(prefix, r.product);
                 }
+                this.lastUpdate.set(bat.mac.toLowerCase(), Date.now());
                 await this.setStateAsync(`${prefix}lastUpdate`, Date.now(), true);
                 await this.setStateAsync(`${prefix}reachable`, true, true);
                 await this.setStateAsync(`${prefix}lastError`, '', true);
@@ -657,7 +659,9 @@ class WattcycleAdapter extends Adapter {
                 continue;
             }
             const cached = this.lastAnalog.get(bat.mac.toLowerCase());
-            if (cached) {
+            const lastUpdate = this.lastUpdate.get(bat.mac.toLowerCase());
+            // If the last reading is less than an hour old, include it in the totals. Otherwise, skip it.
+            if (cached && lastUpdate && Date.now() - lastUpdate < 3600 * 1000) {
                 reads.push(cached);
             }
         }

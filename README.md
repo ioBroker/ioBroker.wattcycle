@@ -113,6 +113,10 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    Placeholder for the next version (at the beginning of the line):
    ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (@GermanBluefox) Updated packages
+* (@GermanBluefox) Ignore in totals batteries that have not been read for more than an hour
+
 ### 2.0.2 (2026-10-28)
 * (@GermanBluefox) Fixed the missing translations of the widget set, the widget name and the help in vis-2
 * (@GermanBluefox) Replaced the wrong telegram context in the Copilot instructions and stopped the template check from creating duplicate issues (#70)
