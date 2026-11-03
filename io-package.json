@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "news": {
+      "2.0.4": {
+        "en": "Restored the restriction of the adapter to Linux and macOS",
+        "de": "Der Adapter wurde wieder auf Linux und macOS beschränkt",
+        "ru": "Восстановлено ограничение адаптера на Linux и macOS",
+        "pt": "Restaurou a restrição do adaptador ao Linux e macOS",
+        "nl": "De beperking van de adapter voor Linux en MacOS hersteld",
+        "fr": "La restriction de l'adaptateur à Linux et macOS a été rétablie",
+        "it": "Restituito il limite dell'adattatore a Linux e macOS",
+        "es": "Restableció la restricción del adaptador a Linux y macOS",
+        "pl": "Przywrócono ograniczenie adaptera do systemu Linux i macOS",
+        "uk": "Відновлено обмеження адаптера на Linux і macOS",
+        "zh-cn": "恢复了适配器对 Linux 和 macOS 的限制"
+      },
       "2.0.3": {
         "en": "Updated packages\nIgnore in totals batteries that have not been read for more than an hour",
         "de": "Neue Pakete\nIgnoriere Akkus, die länger als eine Stunde nicht gelesen wurden",
@@ -80,19 +93,6 @@
         "pl": "Użyj adresu MAC jako unikalnego identyfikatora adaptera bluetooth",
         "uk": "Використовуйте MAC адресу як унікальний адаптер bluetooth",
         "zh-cn": "使用 MAC 地址作为唯一标识的蓝牙适配器"
-      },
-      "0.1.0": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "первый релиз",
-        "pt": "lançamento inicial",
-        "nl": "eerste release",
-        "fr": "première version",
-        "it": "rilascio iniziale",
-        "es": "lanzamiento inicial",
-        "pl": "pierwsze wydanie",
-        "uk": "первый релиз",
-        "zh-cn": "初始版本"
       }
     },
     "titleLang": {

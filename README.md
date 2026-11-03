@@ -113,7 +113,7 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
    Placeholder for the next version (at the beginning of the line):
    ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 2.0.4 (2026-11-03)
 * (@GermanBluefox) Restored the restriction of the adapter to Linux and macOS
 
 ### 2.0.3 (2026-11-02)
@@ -138,9 +138,6 @@ sendTo('wattcycle.0', 'scan', { duration: 8000 }, res => console.log(res.devices
 * (@GermanBluefox) Updated packages
 * (@GermanBluefox) Fixed the build (tsconfig for node 22), so 1.0.0 was never published
 * (@GermanBluefox) The adapter does not run in compact mode anymore: the BLE stack of noble keeps its state per process
-
-### 0.2.2 (2026-05-07)
-* (@GermanBluefox) Managed timeouts and power off
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
