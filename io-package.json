@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wattcycle",
-    "version": "2.0.4",
+    "version": "2.1.0",
     "news": {
+      "2.1.0": {
+        "en": "Added the web component `<iob-wattcycle-battery>` for Aura and other hosts (`common.webComponents`)",
+        "de": "Webkomponente <iob-wattcycle-battery>für Aura und andere Hosts hinzugefügt (`common.WebComponents`)",
+        "ru": "Добавлен веб-компонент <iob-wattcycle-battery>`для Aura и других хостов (`Common.webcomponents`)",
+        "pt": "Adição do componente web `<iob-wattcycle-battery>` para Aura e outros hosts (`common.webComponents`)",
+        "nl": "De webcomponent `<iob-wattcycle-battery>` toegevoegd voor Aura en andere hosts (`Common.WebComponents`)",
+        "fr": "Ajout du composant Web `<iob-wattcycle-battery>` pour Aura et les autres hôtes (`common.WebComponents`)",
+        "it": "Aggiunto il componente web <iob-wattcycle-battery>per Aura e altri host (Common.WebComponents)",
+        "es": "Añadió el componente web `<iob-wattcycle-battery>` para Aura y otros hosts (`Common.WebComponents`)",
+        "pl": "Dodano komponent sieciowy `<iob-wattcycle-battery>` dla Aura i innych hostów (`common.webcomponents`)",
+        "uk": "Додано веб-компонент `<iob-wattcycle-battery>` для Aura та інших хостів (`Common.WebComponents`)",
+        "zh-cn": "为 <iob-wattcycle-battery>Aura 和其他主机添加了 Web 组件 ``(`common.webComponents`)"
+      },
       "2.0.4": {
         "en": "Restored the restriction of the adapter to Linux and macOS",
         "de": "Der Adapter wurde wieder auf Linux und macOS beschränkt",
@@ -80,19 +93,6 @@
         "pl": "Zarządzanie przerwami czasowymi i wyłączeniem zasilania",
         "uk": "Управління часами і відключенням живлення",
         "zh-cn": "管理超时和停电"
-      },
-      "0.2.1": {
-        "en": "Use MAC address as unique identifier bluetooth adapter",
-        "de": "MAC-Adresse als eindeutige Kennung bluetooth Adapter verwenden",
-        "ru": "Используйте MAC-адрес в качестве уникального идентификатора Bluetooth-адаптера",
-        "pt": "Usar o endereço MAC como adaptador único identificador bluetooth",
-        "nl": "Gebruik MAC-adres als unieke identificatie bluetooth-adapter",
-        "fr": "Utiliser l'adresse MAC comme identifiant unique adaptateur bluetooth",
-        "it": "Utilizzare l'indirizzo MAC come univoco identificatore adattatore bluetooth",
-        "es": "Utilice la dirección MAC como adaptador único de identificación bluetooth",
-        "pl": "Użyj adresu MAC jako unikalnego identyfikatora adaptera bluetooth",
-        "uk": "Використовуйте MAC адресу як унікальний адаптер bluetooth",
-        "zh-cn": "使用 MAC 地址作为唯一标识的蓝牙适配器"
       }
     },
     "titleLang": {
