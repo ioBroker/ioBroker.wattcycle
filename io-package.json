@@ -207,6 +207,9 @@
         ]
       }
     },
+    "webComponents": [
+      "webcomponents/wattcycle-battery.json"
+    ],
     "restartAdapters": [
       "devices",
       "vis-2"

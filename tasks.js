@@ -3,10 +3,11 @@
 /**
  * Puts the built widget bundles where their hosts look for them.
  *
- *   node tasks.js devices   src-devices/build -> admin/dm-widgets   (the devices app)
- *   node tasks.js vis       src-widgets/build -> widgets/wattcycle  (vis-2)
+ *   node tasks.js devices   src-devices/build       -> admin/dm-widgets     (the devices app)
+ *   node tasks.js vis       src-widgets/build       -> widgets/wattcycle    (vis-2)
+ *   node tasks.js wc        src-webcomponents/build -> admin/webcomponents  (web components: Aura, vis-2, devices, ...)
  *
- * Run by the `devices:build` and `vis:build` npm scripts after the bundle is built. Each target is
+ * Run by the `devices:build`, `vis:build` and `wc:build` npm scripts after the bundle is built. Each target is
  * emptied first, so no chunk of an earlier build - with a different hash - is left behind to ship.
  *
  * Copied is everything the build emits except `index.html`, the stand-alone dev page, and dot
@@ -60,7 +61,17 @@ function copyVis() {
     copyDir(path.join(__dirname, 'src-widgets', 'build'), target, isDeliverable);
 }
 
-const TASKS = { devices: copyDevices, vis: copyVis };
+/**
+ * The web component: one ES module and its manifest, named by `common.webComponents` in io-package.json. Every
+ * host loads them from `/adapter/wattcycle/webcomponents/`.
+ */
+function copyWebComponents() {
+    const target = path.join(__dirname, 'admin', 'webcomponents');
+    fs.rmSync(target, { recursive: true, force: true });
+    copyDir(path.join(__dirname, 'src-webcomponents', 'build'), target, name => /\.(js|json)$/.test(name));
+}
+
+const TASKS = { devices: copyDevices, vis: copyVis, wc: copyWebComponents };
 
 const task = TASKS[process.argv[2]];
 if (!task) {

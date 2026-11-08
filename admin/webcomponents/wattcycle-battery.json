@@ -1,0 +1,207 @@
+{
+    "$schema": "https://raw.githubusercontent.com/ioBroker/web-components/main/schemas/manifest.json",
+    "manifestVersion": 1,
+    "tag": "iob-wattcycle-battery",
+    "name": "WattCycle battery",
+    "description": {
+        "en": "State of charge, charge state, voltage, current, power, health and cells of a WattCycle battery",
+        "de": "Ladezustand, Lade-/Entladestatus, Spannung, Strom, Leistung, Zustand und Zellen einer WattCycle-Batterie",
+        "ru": "Уровень заряда, режим, напряжение, ток, мощность, состояние и ячейки батареи WattCycle",
+        "pt": "Estado de carga, modo, tensão, corrente, potência, saúde e células de uma bateria WattCycle",
+        "nl": "Laadtoestand, laadmodus, spanning, stroom, vermogen, conditie en cellen van een WattCycle-batterij",
+        "fr": "État de charge, mode, tension, courant, puissance, santé et cellules d'une batterie WattCycle",
+        "it": "Stato di carica, modalità, tensione, corrente, potenza, salute e celle di una batteria WattCycle",
+        "es": "Estado de carga, modo, tensión, corriente, potencia, salud y celdas de una batería WattCycle",
+        "pl": "Stan naładowania, tryb, napięcie, prąd, moc, kondycja i ogniwa akumulatora WattCycle",
+        "uk": "Рівень заряду, режим, напруга, струм, потужність, стан і комірки батареї WattCycle",
+        "zh-cn": "WattCycle 电池的荷电状态、充放电状态、电压、电流、功率、健康度和电芯"
+    },
+    "icon": "../wattcycle.png",
+    "module": "wattcycle-battery.js",
+    "size": {
+        "width": 360,
+        "height": 180
+    },
+    "settings": {
+        "type": "panel",
+        "items": {
+            "device": {
+                "type": "objectId",
+                "types": "device",
+                "root": "wattcycle",
+                "label": {
+                    "en": "Battery",
+                    "de": "Batterie",
+                    "ru": "Батарея",
+                    "pt": "Bateria",
+                    "nl": "Batterij",
+                    "fr": "Batterie",
+                    "it": "Batteria",
+                    "es": "Batería",
+                    "pl": "Akumulator",
+                    "uk": "Батарея",
+                    "zh-cn": "电池"
+                },
+                "help": {
+                    "en": "A battery device of the wattcycle adapter, or \"total\" for the sum of all batteries",
+                    "de": "Ein Batterie-Gerät des wattcycle-Adapters oder \"total\" für die Summe aller Batterien",
+                    "ru": "Устройство-батарея адаптера wattcycle или \"total\" для суммы всех батарей",
+                    "pt": "Um dispositivo de bateria do adaptador wattcycle ou \"total\" para a soma de todas as baterias",
+                    "nl": "Een batterijapparaat van de wattcycle-adapter of \"total\" voor de som van alle batterijen",
+                    "fr": "Un appareil batterie de l’adaptateur wattcycle ou \"total\" pour la somme de toutes les batteries",
+                    "it": "Un dispositivo batteria dell’adattatore wattcycle o \"total\" per la somma di tutte le batterie",
+                    "es": "Un dispositivo de batería del adaptador wattcycle o \"total\" para la suma de todas las baterías",
+                    "pl": "Urządzenie akumulatora adaptera wattcycle lub \"total\" dla sumy wszystkich akumulatorów",
+                    "uk": "Пристрій-батарея адаптера wattcycle або \"total\" для суми всіх батарей",
+                    "zh-cn": "wattcycle 适配器的电池设备，或代表所有电池总和的 \"total\""
+                },
+                "default": "wattcycle.0.total"
+            },
+            "name": {
+                "type": "text",
+                "label": {
+                    "en": "Name",
+                    "de": "Name",
+                    "ru": "Имя",
+                    "pt": "Nome",
+                    "nl": "Naam",
+                    "fr": "Nom",
+                    "it": "Nome",
+                    "es": "Nombre",
+                    "pl": "Nazwa",
+                    "uk": "Ім’я",
+                    "zh-cn": "名称"
+                },
+                "help": {
+                    "en": "Empty: the name of the device",
+                    "de": "Leer: der Name des Geräts",
+                    "ru": "Пусто: имя устройства",
+                    "pt": "Vazio: o nome do dispositivo",
+                    "nl": "Leeg: de naam van het apparaat",
+                    "fr": "Vide : le nom de l’appareil",
+                    "it": "Vuoto: il nome del dispositivo",
+                    "es": "Vacío: el nombre del dispositivo",
+                    "pl": "Puste: nazwa urządzenia",
+                    "uk": "Порожньо: ім’я пристрою",
+                    "zh-cn": "留空：使用设备名称"
+                }
+            },
+            "layout": {
+                "type": "select",
+                "label": {
+                    "en": "Layout",
+                    "de": "Darstellung",
+                    "ru": "Вид",
+                    "pt": "Layout",
+                    "nl": "Weergave",
+                    "fr": "Disposition",
+                    "it": "Layout",
+                    "es": "Diseño",
+                    "pl": "Układ",
+                    "uk": "Вигляд",
+                    "zh-cn": "布局"
+                },
+                "options": [
+                    {
+                        "value": "auto",
+                        "label": {
+                            "en": "Automatic (by size)",
+                            "de": "Automatisch (nach Größe)",
+                            "ru": "Автоматически (по размеру)",
+                            "pt": "Automático (pelo tamanho)",
+                            "nl": "Automatisch (op grootte)",
+                            "fr": "Automatique (selon la taille)",
+                            "it": "Automatico (in base alla dimensione)",
+                            "es": "Automático (según el tamaño)",
+                            "pl": "Automatycznie (wg rozmiaru)",
+                            "uk": "Автоматично (за розміром)",
+                            "zh-cn": "自动（按尺寸）"
+                        }
+                    },
+                    {
+                        "value": "compact",
+                        "label": {
+                            "en": "Compact",
+                            "de": "Kompakt",
+                            "ru": "Компактно",
+                            "pt": "Compacto",
+                            "nl": "Compact",
+                            "fr": "Compact",
+                            "it": "Compatto",
+                            "es": "Compacto",
+                            "pl": "Kompaktowy",
+                            "uk": "Компактно",
+                            "zh-cn": "紧凑"
+                        }
+                    },
+                    {
+                        "value": "bar",
+                        "label": {
+                            "en": "Bar",
+                            "de": "Leiste",
+                            "ru": "Полоса",
+                            "pt": "Barra",
+                            "nl": "Balk",
+                            "fr": "Barre",
+                            "it": "Barra",
+                            "es": "Barra",
+                            "pl": "Pasek",
+                            "uk": "Смуга",
+                            "zh-cn": "条形"
+                        }
+                    },
+                    {
+                        "value": "wide",
+                        "label": {
+                            "en": "Wide",
+                            "de": "Breit",
+                            "ru": "Широко",
+                            "pt": "Largo",
+                            "nl": "Breed",
+                            "fr": "Large",
+                            "it": "Largo",
+                            "es": "Ancho",
+                            "pl": "Szeroki",
+                            "uk": "Широко",
+                            "zh-cn": "宽"
+                        }
+                    },
+                    {
+                        "value": "full",
+                        "label": {
+                            "en": "Full",
+                            "de": "Vollständig",
+                            "ru": "Полностью",
+                            "pt": "Completo",
+                            "nl": "Volledig",
+                            "fr": "Complet",
+                            "it": "Completo",
+                            "es": "Completo",
+                            "pl": "Pełny",
+                            "uk": "Повністю",
+                            "zh-cn": "完整"
+                        }
+                    }
+                ],
+                "default": "auto"
+            },
+            "openDialog": {
+                "type": "checkbox",
+                "label": {
+                    "en": "Open details on click",
+                    "de": "Details bei Klick öffnen",
+                    "ru": "Открывать подробности по щелчку",
+                    "pt": "Abrir detalhes ao clicar",
+                    "nl": "Details openen bij klik",
+                    "fr": "Ouvrir les détails au clic",
+                    "it": "Apri dettagli al clic",
+                    "es": "Abrir detalles al hacer clic",
+                    "pl": "Otwórz szczegóły po kliknięciu",
+                    "uk": "Відкривати деталі по кліку",
+                    "zh-cn": "点击打开详情"
+                },
+                "default": true
+            }
+        }
+    }
+}
