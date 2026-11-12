@@ -208,7 +208,16 @@
       }
     },
     "webComponents": [
-      "webcomponents/wattcycle-battery.json"
+      {
+        "manifest": "webcomponents/wattcycle-battery.json",
+        "tag": "iob-wattcycle-battery",
+        "name": "WattCycle battery",
+        "icon": "../wattcycle.png",
+        "size": {
+          "width": 360,
+          "height": 180
+        }
+      }
     ],
     "restartAdapters": [
       "devices",
